@@ -1,9 +1,20 @@
-import { User, CheckCircle, ArrowRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { User, CheckCircle, ArrowRight, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
 const Welcome = () => {
   const navigate = useNavigate();
+  const [showInstall, setShowInstall] = useState(false);
+
+  useEffect(() => {
+    // Check if running as PWA
+    const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+    // Show install prompt if not already installed
+    if (!isStandalone) {
+      setShowInstall(true);
+    }
+  }, []);
 
   const features = [
     {
@@ -22,6 +33,17 @@ const Welcome = () => {
 
   return (
     <div className="min-h-screen gradient-primary flex flex-col items-center justify-center px-6 py-12">
+      {/* Install Banner */}
+      {showInstall && (
+        <button
+          onClick={() => navigate("/install")}
+          className="fixed top-4 right-4 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-white/30 transition-colors"
+        >
+          <Download className="w-4 h-4" />
+          Install App
+        </button>
+      )}
+
       {/* Logo */}
       <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-6">
         <User className="w-12 h-12 text-primary" />
