@@ -99,6 +99,51 @@ const mockFavorites = [
   },
 ];
 
+const mockConnections = [
+  {
+    id: "1",
+    name: "James Anderson",
+    profession: "Architect",
+    location: "City Center",
+    lastActive: "2 hours ago",
+    rating: 4.9,
+    reviewCount: 156,
+    distance: "Downtown",
+    dailyRate: 200,
+    weeklyRate: 1400,
+    bio: "Licensed architect with 18 years of experience in residential and commercial design. Specialized in...",
+    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
+  },
+  {
+    id: "2",
+    name: "Michael Thompson",
+    profession: "Project Manager",
+    location: "Construction Site A",
+    lastActive: "30 min ago",
+    rating: 4.8,
+    reviewCount: 203,
+    distance: "Westside",
+    dailyRate: 180,
+    weeklyRate: 1260,
+    bio: "PMP certified project manager specializing in construction project coordination, timeline...",
+    avatarUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
+  },
+  {
+    id: "3",
+    name: "Sarah Mitchell",
+    profession: "Interior Designer",
+    location: "Design Studio",
+    lastActive: "45 min ago",
+    rating: 4.9,
+    reviewCount: 224,
+    distance: "Northside",
+    dailyRate: 120,
+    weeklyRate: 840,
+    bio: "Award-winning interior designer specializing in contemporary and luxury residential spaces. Expe...",
+    avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
+  },
+];
+
 const mockEmergencyProfessionals = [
   {
     id: "1",
@@ -245,7 +290,7 @@ const CustomerHub = () => {
         {/* Content based on active tab */}
         {activeHubTab === "bookings" && (
           <>
-            {/* Discover Toggle - Only on bookings tab for visual consistency */}
+            {/* Discover Toggle */}
             <div className="flex gap-2 mb-4">
               <Button
                 variant={discoverTab === "discover" ? "default" : "outline"}
@@ -286,39 +331,19 @@ const CustomerHub = () => {
               </>
             ) : (
               <>
-                <h2 className="font-semibold text-foreground mb-3">My Bookings</h2>
-                
-                {/* Booking Filters */}
-                <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
-                  {(["all", "upcoming", "in_progress", "completed"] as BookingFilter[]).map((filter) => (
-                    <Button
-                      key={filter}
-                      variant={bookingFilter === filter ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setBookingFilter(filter)}
-                      className="whitespace-nowrap capitalize"
-                    >
-                      {filter === "in_progress" ? "In progress" : filter}
-                    </Button>
-                  ))}
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="font-semibold text-foreground">Your Connections</h2>
+                  <span className="text-sm text-muted-foreground">{mockConnections.length} connections</span>
                 </div>
-
                 <div className="space-y-3">
-                  {filteredBookings.map((booking) => (
-                    <CustomerBookingCard
-                      key={booking.id}
-                      {...booking}
-                      onReschedule={() => console.log("Reschedule", booking.id)}
-                      onDetails={() => console.log("Details", booking.id)}
-                      onLeaveReview={() => console.log("Review", booking.id)}
-                      onTrackProgress={() => console.log("Track", booking.id)}
+                  {mockConnections.map((professional) => (
+                    <ProfessionalCard
+                      key={professional.id}
+                      {...professional}
+                      variant="detailed"
+                      onView={() => navigate(`/customer/professional/${professional.id}`)}
                     />
                   ))}
-                  {filteredBookings.length === 0 && (
-                    <p className="text-center text-muted-foreground py-8">
-                      No bookings found
-                    </p>
-                  )}
                 </div>
               </>
             )}

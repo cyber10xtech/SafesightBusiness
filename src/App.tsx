@@ -29,6 +29,11 @@ import CustomerMessages from "./pages/customer/CustomerMessages";
 import CustomerAlerts from "./pages/customer/CustomerAlerts";
 import CustomerSettings from "./pages/customer/CustomerSettings";
 import ProfessionalProfile from "./pages/customer/ProfessionalProfile";
+import EditProfile from "./pages/customer/EditProfile";
+import PaymentMethods from "./pages/customer/PaymentMethods";
+import NotificationSettings from "./pages/customer/NotificationSettings";
+import PrivacySecurity from "./pages/customer/PrivacySecurity";
+import HelpSupport from "./pages/customer/HelpSupport";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +72,11 @@ const App = () => (
             <Route path="/customer/alerts" element={<CustomerAlerts />} />
             <Route path="/customer/settings" element={<CustomerSettings />} />
             <Route path="/customer/professional/:id" element={<ProfessionalProfile />} />
+            <Route path="/customer/settings/edit-profile" element={<EditProfile />} />
+            <Route path="/customer/settings/payments" element={<PaymentMethods />} />
+            <Route path="/customer/settings/notifications" element={<NotificationSettings />} />
+            <Route path="/customer/settings/privacy" element={<PrivacySecurity />} />
+            <Route path="/customer/settings/help" element={<HelpSupport />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
