@@ -21,6 +21,15 @@ import JobHistory from "./pages/JobHistory";
 import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 
+// Customer App Pages
+import CustomerSignIn from "./pages/customer/CustomerSignIn";
+import CustomerHome from "./pages/customer/CustomerHome";
+import CustomerHub from "./pages/customer/CustomerHub";
+import CustomerMessages from "./pages/customer/CustomerMessages";
+import CustomerAlerts from "./pages/customer/CustomerAlerts";
+import CustomerSettings from "./pages/customer/CustomerSettings";
+import ProfessionalProfile from "./pages/customer/ProfessionalProfile";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -31,7 +40,10 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            {/* Welcome / Landing */}
             <Route path="/" element={<Welcome />} />
+            
+            {/* Business App Routes */}
             <Route path="/sign-in" element={<SignIn />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
@@ -46,6 +58,16 @@ const App = () => (
             <Route path="/chat/:id" element={<Chat />} />
             <Route path="/job-history" element={<JobHistory />} />
             <Route path="/install" element={<Install />} />
+            
+            {/* Customer App Routes */}
+            <Route path="/customer/sign-in" element={<CustomerSignIn />} />
+            <Route path="/customer/home" element={<CustomerHome />} />
+            <Route path="/customer/hub" element={<CustomerHub />} />
+            <Route path="/customer/messages" element={<CustomerMessages />} />
+            <Route path="/customer/alerts" element={<CustomerAlerts />} />
+            <Route path="/customer/settings" element={<CustomerSettings />} />
+            <Route path="/customer/professional/:id" element={<ProfessionalProfile />} />
+            
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
