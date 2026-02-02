@@ -40,6 +40,7 @@ import LiveChatSupport from "./pages/customer/LiveChatSupport";
 import InviteFriends from "./pages/customer/InviteFriends";
 import TermsPrivacy from "./pages/customer/TermsPrivacy";
 import BookingRequest from "./pages/customer/BookingRequest";
+import CustomerInstall from "./pages/customer/CustomerInstall";
 
 const queryClient = new QueryClient();
 
@@ -89,6 +90,7 @@ const App = () => (
             <Route path="/customer/live-chat" element={<LiveChatSupport />} />
             <Route path="/customer/invite" element={<InviteFriends />} />
             <Route path="/customer/terms" element={<TermsPrivacy />} />
+            <Route path="/customer/install" element={<CustomerInstall />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
