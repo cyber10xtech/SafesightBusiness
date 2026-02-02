@@ -9,6 +9,11 @@ import AccountTypeSelection from "./pages/AccountTypeSelection";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Bookings from "./pages/Bookings";
+import Profile from "./pages/Profile";
+import Notifications from "./pages/Notifications";
+import Messages from "./pages/Messages";
+import Chat from "./pages/Chat";
+import JobHistory from "./pages/JobHistory";
 import Install from "./pages/Install";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +32,11 @@ const App = () => (
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/bookings" element={<Bookings />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/chat/:id" element={<Chat />} />
+          <Route path="/job-history" element={<JobHistory />} />
           <Route path="/install" element={<Install />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

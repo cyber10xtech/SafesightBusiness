@@ -1,13 +1,12 @@
 import { useState } from "react";
-import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import BookingRequestCard from "@/components/dashboard/BookingRequestCard";
+import AppHeader from "@/components/layout/AppHeader";
+import BottomNav from "@/components/layout/BottomNav";
 
 type TabFilter = "all" | "pending" | "confirmed" | "completed";
 
 const Bookings = () => {
-  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabFilter>("all");
 
   const allBookings = [
@@ -17,11 +16,11 @@ const Bookings = () => {
       service: "Complete Home Electrical Installation",
       type: "Contract",
       date: "Jan 25, 2026",
-      amount: "$2500",
+      amount: "₦2.5M",
       status: "pending" as const,
       description: "Need complete electrical rewiring for 2000 sq ft home. Includes new panel, outlets, and lighting fixtures.",
-      phone: "+1 (555) 111-2222",
-      whatsapp: "+1 (555) 111-2222",
+      phone: "+234 801 111 2222",
+      whatsapp: "+234 801 111 2222",
     },
     {
       id: "2",
@@ -29,12 +28,12 @@ const Bookings = () => {
       service: "Circuit Breaker Repair",
       type: "Daily",
       date: "Jan 23, 2026",
-      amount: "$350",
+      amount: "₦85,000",
       status: "confirmed" as const,
       description: "Circuit breaker keeps tripping in the kitchen. Need diagnosis and repair.",
       duration: "1 day",
-      phone: "+1 (555) 222-3333",
-      whatsapp: "+1 (555) 222-3333",
+      phone: "+234 802 222 3333",
+      whatsapp: "+234 802 222 3333",
     },
     {
       id: "3",
@@ -42,12 +41,12 @@ const Bookings = () => {
       service: "Outdoor Lighting Installation",
       type: "Daily",
       date: "Jan 22, 2026",
-      amount: "$350",
+      amount: "₦120,000",
       status: "confirmed" as const,
       description: "Install landscape lighting around front yard and driveway.",
       duration: "1 day",
-      phone: "+1 (555) 333-4444",
-      whatsapp: "+1 (555) 333-4444",
+      phone: "+234 803 333 4444",
+      whatsapp: "+234 803 333 4444",
     },
     {
       id: "4",
@@ -55,11 +54,11 @@ const Bookings = () => {
       service: "Smart Home Setup",
       type: "Contract",
       date: "Jan 20, 2026",
-      amount: "$1800",
+      amount: "₦1.8M",
       status: "completed" as const,
       description: "Full smart home automation including lighting, thermostat, and security.",
-      phone: "+1 (555) 444-5555",
-      whatsapp: "+1 (555) 444-5555",
+      phone: "+234 804 444 5555",
+      whatsapp: "+234 804 444 5555",
     },
   ];
 
@@ -75,18 +74,8 @@ const Bookings = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="gradient-primary px-4 py-4">
-        <button 
-          onClick={() => navigate("/dashboard")}
-          className="flex items-center gap-2 text-white mb-2"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          Back to Dashboard
-        </button>
-        <h1 className="text-2xl font-bold text-white">Booking Requests</h1>
-      </header>
+    <div className="min-h-screen bg-background pb-20">
+      <AppHeader title="Bookings" showBack />
 
       {/* Tabs */}
       <div className="px-4 py-3 bg-card border-b border-border overflow-x-auto">
@@ -120,6 +109,8 @@ const Bookings = () => {
           </div>
         )}
       </div>
+
+      <BottomNav />
     </div>
   );
 };
