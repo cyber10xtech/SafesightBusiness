@@ -25,11 +25,13 @@ export const useProfile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [profileExists, setProfileExists] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!user) {
       setProfile(null);
       setLoading(false);
+      setProfileExists(null);
       return;
     }
 
@@ -40,12 +42,15 @@ export const useProfile = () => {
           .from("profiles")
           .select("*")
           .eq("user_id", user.id)
-          .single();
+          .maybeSingle();
 
         if (error) throw error;
-        setProfile(data as Profile);
+        
+        setProfile(data as Profile | null);
+        setProfileExists(data !== null);
       } catch (err) {
         setError(err as Error);
+        setProfileExists(false);
       } finally {
         setLoading(false);
       }
@@ -79,5 +84,5 @@ export const useProfile = () => {
     }
   };
 
-  return { profile, loading, error, updateProfile };
+  return { profile, loading, error, updateProfile, profileExists };
 };

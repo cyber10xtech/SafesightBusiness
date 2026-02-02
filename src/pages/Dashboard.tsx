@@ -16,11 +16,19 @@ import BottomNav from "@/components/layout/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { profile, loading: profileLoading } = useProfile();
+  const { profile, loading: profileLoading, profileExists } = useProfile();
+
+  // Redirect to complete profile if user signed in but no profile exists
+  useEffect(() => {
+    if (!authLoading && !profileLoading && user && profileExists === false) {
+      navigate("/complete-profile");
+    }
+  }, [authLoading, profileLoading, user, profileExists, navigate]);
 
   const stats = [
     { icon: Calendar, label: "Total Bookings", value: "0", trend: "-", trendUp: true },
