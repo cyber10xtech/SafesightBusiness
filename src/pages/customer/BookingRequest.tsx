@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Calendar, Clock, FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,12 +8,28 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useBookings } from "@/hooks/useBookings";
+import { useProfessionals } from "@/hooks/useProfessionals";
+import { createNotification } from "@/hooks/useNotifications";
 
 const BookingRequest = () => {
   const navigate = useNavigate();
   const { id: professionalId } = useParams<{ id: string }>();
   const { createBooking } = useBookings();
+  const { getProfessionalById } = useProfessionals();
   const [isLoading, setIsLoading] = useState(false);
+  const [professional, setProfessional] = useState<{ user_id: string; full_name: string } | null>(null);
+
+  useEffect(() => {
+    const loadProfessional = async () => {
+      if (professionalId) {
+        const { data } = await getProfessionalById(professionalId);
+        if (data) {
+          setProfessional({ user_id: data.user_id, full_name: data.full_name });
+        }
+      }
+    };
+    loadProfessional();
+  }, [professionalId]);
   
   const [formData, setFormData] = useState({
     serviceType: "",
@@ -58,6 +74,18 @@ const BookingRequest = () => {
     if (error) {
       toast.error("Failed to create booking. Please try again.");
       return;
+    }
+
+    // Send notification to professional
+    if (professional) {
+      await createNotification(
+        professional.user_id,
+        'professional',
+        'booking',
+        'New Booking Request',
+        `You have a new booking request for ${formData.serviceType} on ${formData.scheduledDate}`,
+        { service_type: formData.serviceType, scheduled_date: formData.scheduledDate }
+      );
     }
 
     toast.success("Booking request sent successfully!");

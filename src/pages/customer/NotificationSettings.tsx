@@ -1,8 +1,10 @@
-import { useState } from "react";
-import { ArrowLeft, Calendar, MessageCircle, DollarSign, Gift, Bell, Smartphone } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowLeft, Calendar, MessageCircle, DollarSign, Gift, Bell, Smartphone, Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 
 interface NotificationSetting {
   id: string;
@@ -17,6 +19,7 @@ interface NotificationSetting {
 
 const NotificationSettings = () => {
   const navigate = useNavigate();
+  const { isSupported, isSubscribed, permission, loading: pushLoading, subscribe, unsubscribe } = usePushNotifications('customer');
   
   const [settings, setSettings] = useState<NotificationSetting[]>([
     {
@@ -81,6 +84,14 @@ const NotificationSettings = () => {
     ));
   };
 
+  const handlePushToggle = async () => {
+    if (isSubscribed) {
+      await unsubscribe();
+    } else {
+      await subscribe();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -95,6 +106,36 @@ const NotificationSettings = () => {
       </div>
 
       <div className="max-w-md mx-auto px-4 py-6">
+        {/* Push Notification Enable/Disable */}
+        {isSupported && (
+          <div className="bg-card rounded-xl border border-border p-4 mb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Smartphone className="w-5 h-5 text-primary" />
+                <div>
+                  <h3 className="font-medium text-foreground">Push Notifications</h3>
+                  <p className="text-xs text-muted-foreground">
+                    {permission === 'denied' 
+                      ? 'Permission denied. Please enable in browser settings.' 
+                      : isSubscribed 
+                        ? 'Enabled - You will receive push notifications'
+                        : 'Enable to receive notifications on this device'}
+                  </p>
+                </div>
+              </div>
+              {pushLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+              ) : (
+                <Switch
+                  checked={isSubscribed}
+                  onCheckedChange={handlePushToggle}
+                  disabled={permission === 'denied'}
+                />
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Info Card */}
         <div className="bg-primary/5 rounded-xl p-4 mb-6">
           <div className="flex items-start gap-3">
