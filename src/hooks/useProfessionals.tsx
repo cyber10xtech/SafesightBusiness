@@ -2,6 +2,17 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Profile } from "./useProfile";
 
+// Escape special ILIKE pattern characters to prevent injection
+const escapeIlikePattern = (str: string): string => {
+  return str.replace(/[%_\\]/g, '\\$&');
+};
+
+// Limit search input length for performance
+const sanitizeSearchInput = (input: string, maxLength = 100): string => {
+  const trimmed = input.trim().slice(0, maxLength);
+  return escapeIlikePattern(trimmed);
+};
+
 export const useProfessionals = () => {
   const [professionals, setProfessionals] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,10 +34,12 @@ export const useProfessionals = () => {
         query = query.eq("profession", filters.profession);
       }
       if (filters?.location) {
-        query = query.ilike("location", `%${filters.location}%`);
+        const sanitized = sanitizeSearchInput(filters.location);
+        query = query.ilike("location", `%${sanitized}%`);
       }
       if (filters?.search) {
-        query = query.or(`full_name.ilike.%${filters.search}%,profession.ilike.%${filters.search}%,bio.ilike.%${filters.search}%`);
+        const sanitized = sanitizeSearchInput(filters.search);
+        query = query.or(`full_name.ilike.%${sanitized}%,profession.ilike.%${sanitized}%,bio.ilike.%${sanitized}%`);
       }
 
       const { data, error } = await query;

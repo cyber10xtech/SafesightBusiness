@@ -62,7 +62,7 @@ const CustomerRegister = () => {
             referral_code: referralCode,
           });
 
-        if (profileError) {
+        if (profileError && import.meta.env.DEV) {
           console.error("Profile creation error:", profileError);
         }
       }

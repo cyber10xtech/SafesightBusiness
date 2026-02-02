@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 
+const isDevelopment = import.meta.env.DEV;
+
 export interface Notification {
   id: string;
   user_id: string;
@@ -48,7 +50,9 @@ export const useNotifications = (userType: 'customer' | 'professional' = 'custom
       setNotifications(typedData);
       setUnreadCount(typedData.filter(n => !n.read).length);
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      if (isDevelopment) {
+        console.error('Error fetching notifications:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -111,7 +115,9 @@ export const useNotifications = (userType: 'customer' | 'professional' = 'custom
       );
       setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      if (isDevelopment) {
+        console.error('Error marking notification as read:', error);
+      }
     }
   };
 
@@ -131,7 +137,9 @@ export const useNotifications = (userType: 'customer' | 'professional' = 'custom
       setNotifications(prev => prev.map(n => ({ ...n, read: true })));
       setUnreadCount(0);
     } catch (error) {
-      console.error('Error marking all as read:', error);
+      if (isDevelopment) {
+        console.error('Error marking all as read:', error);
+      }
     }
   };
 
@@ -181,7 +189,9 @@ export const createNotification = async (
     if (error) throw error;
     return { error: null };
   } catch (error) {
-    console.error('Error creating notification:', error);
+    if (isDevelopment) {
+      console.error('Error creating notification:', error);
+    }
     return { error: error as Error };
   }
 };
