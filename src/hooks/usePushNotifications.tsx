@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { toast } from "sonner";
 
+const isDevelopment = import.meta.env.DEV;
+
 interface PushNotificationState {
   isSupported: boolean;
   isSubscribed: boolean;
@@ -52,7 +54,9 @@ export const usePushNotifications = (userType: 'customer' | 'professional' = 'cu
         isSubscribed: !!subscription,
       }));
     } catch (error) {
-      console.error('Error checking subscription:', error);
+      if (isDevelopment) {
+        console.error('Error checking subscription:', error);
+      }
     }
   };
 
@@ -130,7 +134,9 @@ export const usePushNotifications = (userType: 'customer' | 'professional' = 'cu
       toast.success('Push notifications enabled!');
       return { error: null };
     } catch (error) {
-      console.error('Error subscribing to push:', error);
+      if (isDevelopment) {
+        console.error('Error subscribing to push:', error);
+      }
       toast.error('Failed to enable push notifications');
       return { error: error as Error };
     } finally {
@@ -162,7 +168,9 @@ export const usePushNotifications = (userType: 'customer' | 'professional' = 'cu
       toast.success('Push notifications disabled');
       return { error: null };
     } catch (error) {
-      console.error('Error unsubscribing:', error);
+      if (isDevelopment) {
+        console.error('Error unsubscribing:', error);
+      }
       toast.error('Failed to disable push notifications');
       return { error: error as Error };
     } finally {
