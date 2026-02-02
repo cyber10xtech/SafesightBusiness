@@ -23,9 +23,11 @@ import NotFound from "./pages/NotFound";
 
 // Customer App Pages
 import CustomerSignIn from "./pages/customer/CustomerSignIn";
+import CustomerRegister from "./pages/customer/CustomerRegister";
 import CustomerHome from "./pages/customer/CustomerHome";
 import CustomerHub from "./pages/customer/CustomerHub";
 import CustomerMessages from "./pages/customer/CustomerMessages";
+import CustomerChat from "./pages/customer/CustomerChat";
 import CustomerAlerts from "./pages/customer/CustomerAlerts";
 import CustomerSettings from "./pages/customer/CustomerSettings";
 import ProfessionalProfile from "./pages/customer/ProfessionalProfile";
@@ -34,6 +36,10 @@ import PaymentMethods from "./pages/customer/PaymentMethods";
 import NotificationSettings from "./pages/customer/NotificationSettings";
 import PrivacySecurity from "./pages/customer/PrivacySecurity";
 import HelpSupport from "./pages/customer/HelpSupport";
+import LiveChatSupport from "./pages/customer/LiveChatSupport";
+import InviteFriends from "./pages/customer/InviteFriends";
+import TermsPrivacy from "./pages/customer/TermsPrivacy";
+import BookingRequest from "./pages/customer/BookingRequest";
 
 const queryClient = new QueryClient();
 
@@ -66,17 +72,23 @@ const App = () => (
             
             {/* Customer App Routes */}
             <Route path="/customer/sign-in" element={<CustomerSignIn />} />
+            <Route path="/customer/register" element={<CustomerRegister />} />
             <Route path="/customer/home" element={<CustomerHome />} />
             <Route path="/customer/hub" element={<CustomerHub />} />
             <Route path="/customer/messages" element={<CustomerMessages />} />
+            <Route path="/customer/chat/:id" element={<CustomerChat />} />
             <Route path="/customer/alerts" element={<CustomerAlerts />} />
             <Route path="/customer/settings" element={<CustomerSettings />} />
             <Route path="/customer/professional/:id" element={<ProfessionalProfile />} />
+            <Route path="/customer/book/:id" element={<BookingRequest />} />
             <Route path="/customer/settings/edit-profile" element={<EditProfile />} />
             <Route path="/customer/settings/payments" element={<PaymentMethods />} />
             <Route path="/customer/settings/notifications" element={<NotificationSettings />} />
             <Route path="/customer/settings/privacy" element={<PrivacySecurity />} />
             <Route path="/customer/settings/help" element={<HelpSupport />} />
+            <Route path="/customer/live-chat" element={<LiveChatSupport />} />
+            <Route path="/customer/invite" element={<InviteFriends />} />
+            <Route path="/customer/terms" element={<TermsPrivacy />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

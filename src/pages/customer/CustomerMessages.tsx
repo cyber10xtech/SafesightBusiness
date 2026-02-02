@@ -46,7 +46,7 @@ const CustomerMessages = () => {
           {mockConversations.map((conversation) => (
             <button
               key={conversation.id}
-              onClick={() => navigate(`/customer/chat/${conversation.id}`)}
+            onClick={() => navigate(`/customer/chat/${conversation.id}`)}
               className="w-full flex items-center gap-3 py-4 hover:bg-muted/50 transition-colors"
             >
               <Avatar className={cn("w-12 h-12", conversation.color)}>

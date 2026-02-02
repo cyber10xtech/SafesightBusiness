@@ -5,9 +5,9 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const contactOptions = [
-  { icon: MessageCircle, label: "Live Chat", color: "bg-primary/10 text-primary" },
-  { icon: Mail, label: "Email", color: "bg-success/10 text-success" },
-  { icon: Phone, label: "Call", color: "bg-purple/10 text-purple" },
+  { icon: MessageCircle, label: "Live Chat", color: "bg-primary/10 text-primary", path: "/customer/live-chat" },
+  { icon: Mail, label: "Email", color: "bg-success/10 text-success", path: null },
+  { icon: Phone, label: "Call", color: "bg-purple/10 text-purple", path: null },
 ];
 
 const faqCategories = [
@@ -83,6 +83,7 @@ const HelpSupport = () => {
             return (
               <button
                 key={option.label}
+                onClick={() => option.path && navigate(option.path)}
                 className="bg-card rounded-xl p-4 border border-border hover:bg-muted/50 transition-colors flex flex-col items-center gap-2"
               >
                 <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", option.color)}>
