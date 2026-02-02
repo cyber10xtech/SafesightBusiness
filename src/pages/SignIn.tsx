@@ -94,7 +94,11 @@ const SignIn = () => {
                 Remember me
               </Label>
             </div>
-            <button type="button" className="text-sm text-primary font-medium hover:underline">
+            <button 
+              type="button" 
+              onClick={() => navigate("/forgot-password")}
+              className="text-sm text-primary font-medium hover:underline"
+            >
               Forgot password?
             </button>
           </div>
