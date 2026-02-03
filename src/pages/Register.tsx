@@ -6,7 +6,9 @@ import { toast } from "sonner";
 import StepCredentials from "@/components/register/StepCredentials";
 import StepPersonalInfo from "@/components/register/StepPersonalInfo";
 import StepContactPricing from "@/components/register/StepContactPricing";
+import StepDocuments from "@/components/register/StepDocuments";
 import StepSkills from "@/components/register/StepSkills";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface RegistrationData {
   accountType: "professional" | "handyman";
@@ -33,6 +35,7 @@ const Register = () => {
   
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userId, setUserId] = useState<string | undefined>();
   const [formData, setFormData] = useState<RegistrationData>({
     accountType,
     email: "",
@@ -50,41 +53,99 @@ const Register = () => {
     documentsUploaded: false,
   });
 
-  const totalSteps = 4;
+  const totalSteps = 5;
   const progress = (currentStep / totalSteps) * 100;
 
   const updateFormData = (data: Partial<RegistrationData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
   };
 
+  // Handle step 1 - create account first for document upload
+  const handleCredentialsNext = async () => {
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords don't match");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    const { error, userId: newUserId } = await signUp(formData.email, formData.password, {
+      accountType: formData.accountType,
+      fullName: formData.fullName || formData.email.split("@")[0],
+      profession: "",
+      bio: "",
+      location: "",
+      phoneNumber: "",
+      whatsappNumber: "",
+      dailyRate: "",
+      contractRate: "",
+      skills: [],
+    });
+
+    setIsSubmitting(false);
+
+    if (error) {
+      toast.error(error.message || "Failed to create account");
+      return;
+    }
+
+    if (newUserId) {
+      setUserId(newUserId);
+    }
+    
+    setCurrentStep(2);
+    toast.success("Account created! Complete your profile to continue.");
+  };
+
+  // Update profile with additional info
+  const updateProfile = async () => {
+    if (!userId) return;
+
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          full_name: formData.fullName,
+          profession: formData.profession || null,
+          bio: formData.bio || null,
+          location: formData.location || null,
+          phone_number: formData.phoneNumber || null,
+          whatsapp_number: formData.whatsappNumber || null,
+          daily_rate: formData.dailyRate || null,
+          contract_rate: formData.contractRate || null,
+          skills: formData.skills || [],
+          documents_uploaded: formData.documentsUploaded,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", userId);
+
+      if (error) throw error;
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.error("Error updating profile:", err);
+      }
+    }
+  };
+
   const handleNext = async () => {
     if (currentStep < totalSteps) {
+      // Update profile on each step
+      if (userId) {
+        await updateProfile();
+      }
       setCurrentStep((prev) => prev + 1);
     } else {
-      // Complete registration
+      // Final step - update profile and redirect
       setIsSubmitting(true);
-      
-      const { error } = await signUp(formData.email, formData.password, {
-        accountType: formData.accountType,
-        fullName: formData.fullName,
-        profession: formData.profession,
-        bio: formData.bio,
-        location: formData.location,
-        phoneNumber: formData.phoneNumber,
-        whatsappNumber: formData.whatsappNumber,
-        dailyRate: formData.dailyRate,
-        contractRate: formData.contractRate,
-        skills: formData.skills,
-      });
-
+      await updateProfile();
       setIsSubmitting(false);
-
-      if (error) {
-        toast.error(error.message || "Failed to create account");
-        return;
-      }
-
-      toast.success("Account created! Please check your email to verify your account.");
+      
+      toast.success("Profile completed! Please check your email to verify your account before signing in.");
       navigate("/sign-in");
     }
   };
@@ -97,6 +158,17 @@ const Register = () => {
     }
   };
 
+  const getStepTitle = () => {
+    switch (currentStep) {
+      case 1: return "Create Account";
+      case 2: return "Personal Info";
+      case 3: return "Contact & Pricing";
+      case 4: return "Upload Documents";
+      case 5: return "Your Skills";
+      default: return "";
+    }
+  };
+
   const renderStep = () => {
     switch (currentStep) {
       case 1:
@@ -104,8 +176,9 @@ const Register = () => {
           <StepCredentials
             data={formData}
             onUpdate={updateFormData}
-            onNext={handleNext}
+            onNext={handleCredentialsNext}
             onBack={handleBack}
+            isSubmitting={isSubmitting}
           />
         );
       case 2:
@@ -128,6 +201,16 @@ const Register = () => {
         );
       case 4:
         return (
+          <StepDocuments
+            data={formData}
+            onUpdate={updateFormData}
+            onNext={handleNext}
+            onBack={handleBack}
+            userId={userId}
+          />
+        );
+      case 5:
+        return (
           <StepSkills
             data={formData}
             onUpdate={updateFormData}
@@ -147,8 +230,8 @@ const Register = () => {
         {/* Progress Header */}
         <div className="p-6 border-b border-border">
           <div className="flex justify-between items-center mb-3">
-            <span className="text-sm font-medium text-foreground">Step {currentStep} of {totalSteps}</span>
-            <span className="text-sm text-muted-foreground">{Math.round(progress)}% Complete</span>
+            <span className="text-sm font-medium text-foreground">Step {currentStep} of {totalSteps}: {getStepTitle()}</span>
+            <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
           </div>
           <Progress value={progress} className="h-2" />
         </div>

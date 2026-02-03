@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Bell, 
   Calendar, 
@@ -7,74 +7,60 @@ import {
   MessageSquare,
   CheckCircle,
   Clock,
-  Trash2
+  Trash2,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppHeader from "@/components/layout/AppHeader";
 import BottomNav from "@/components/layout/BottomNav";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Notification {
   id: string;
-  type: "booking" | "payment" | "review" | "message" | "system";
+  type: string;
   title: string;
   message: string;
-  time: string;
+  created_at: string;
   read: boolean;
 }
 
 const Notifications = () => {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: "1",
-      type: "booking",
-      title: "New Booking Request",
-      message: "John Smith requested an electrical installation service for Jan 25, 2026",
-      time: "2 min ago",
-      read: false,
-    },
-    {
-      id: "2",
-      type: "payment",
-      title: "Payment Received",
-      message: "You received ₦350,000 for the wiring repair job",
-      time: "1 hour ago",
-      read: false,
-    },
-    {
-      id: "3",
-      type: "review",
-      title: "New Review",
-      message: "Sarah Johnson left you a 5-star review: 'Excellent work!'",
-      time: "3 hours ago",
-      read: true,
-    },
-    {
-      id: "4",
-      type: "message",
-      title: "New Message",
-      message: "Mike Davis: 'When can you start the project?'",
-      time: "5 hours ago",
-      read: true,
-    },
-    {
-      id: "5",
-      type: "system",
-      title: "Profile Boost Expired",
-      message: "Your profile boost has expired. Renew to stay visible.",
-      time: "1 day ago",
-      read: true,
-    },
-    {
-      id: "6",
-      type: "booking",
-      title: "Booking Confirmed",
-      message: "Your booking with TechCorp Ltd has been confirmed for Feb 1",
-      time: "2 days ago",
-      read: true,
-    },
-  ]);
+  const { user } = useAuth();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const getIcon = (type: Notification["type"]) => {
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (!user?.id) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("notifications")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+        setNotifications(data || []);
+      } catch (err) {
+        if (import.meta.env.DEV) {
+          console.error("Error fetching notifications:", err);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user?.id) {
+      fetchNotifications();
+    } else {
+      setLoading(false);
+    }
+  }, [user?.id]);
+
+  const getIcon = (type: string) => {
     switch (type) {
       case "booking":
         return Calendar;
@@ -84,12 +70,12 @@ const Notifications = () => {
         return Star;
       case "message":
         return MessageSquare;
-      case "system":
+      default:
         return Bell;
     }
   };
 
-  const getIconColor = (type: Notification["type"]) => {
+  const getIconColor = (type: string) => {
     switch (type) {
       case "booking":
         return "bg-primary/10 text-primary";
@@ -99,23 +85,55 @@ const Notifications = () => {
         return "bg-warning/10 text-warning";
       case "message":
         return "bg-secondary text-secondary-foreground";
-      case "system":
+      default:
         return "bg-muted text-muted-foreground";
     }
   };
 
-  const markAsRead = (id: string) => {
-    setNotifications(notifications.map(n => 
-      n.id === id ? { ...n, read: true } : n
-    ));
+  const markAsRead = async (id: string) => {
+    try {
+      await supabase
+        .from("notifications")
+        .update({ read: true })
+        .eq("id", id);
+
+      setNotifications(notifications.map(n => 
+        n.id === id ? { ...n, read: true } : n
+      ));
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.error("Error marking as read:", err);
+      }
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, read: true })));
+  const markAllAsRead = async () => {
+    if (!user?.id) return;
+
+    try {
+      await supabase
+        .from("notifications")
+        .update({ read: true })
+        .eq("user_id", user.id);
+
+      setNotifications(notifications.map(n => ({ ...n, read: true })));
+      toast.success("All notifications marked as read");
+    } catch (err) {
+      toast.error("Failed to update notifications");
+    }
   };
 
-  const deleteNotification = (id: string) => {
-    setNotifications(notifications.filter(n => n.id !== id));
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) return `${diffMins} min ago`;
+    if (diffHours < 24) return `${diffHours} hr ago`;
+    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -145,10 +163,17 @@ const Notifications = () => {
 
         {/* Notifications List */}
         <div className="space-y-3">
-          {notifications.length === 0 ? (
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : notifications.length === 0 ? (
             <div className="text-center py-12">
               <Bell className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
               <p className="text-muted-foreground">No notifications yet</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                You'll receive updates about bookings and messages here
+              </p>
             </div>
           ) : (
             notifications.map((notification) => {
@@ -168,32 +193,21 @@ const Notifications = () => {
                       <Icon className="w-5 h-5" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className={`font-medium text-sm ${notification.read ? "text-foreground" : "text-foreground"}`}>
-                          {notification.title}
-                        </h3>
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteNotification(notification.id);
-                          }}
-                          className="text-muted-foreground hover:text-destructive transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                      <h3 className="font-medium text-sm text-foreground">
+                        {notification.title}
+                      </h3>
                       <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                         {notification.message}
                       </p>
                       <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
                         <Clock className="w-3 h-3" />
-                        {notification.time}
+                        {formatTime(notification.created_at)}
                       </div>
                     </div>
+                    {!notification.read && (
+                      <div className="w-2 h-2 bg-primary rounded-full shrink-0 mt-2" />
+                    )}
                   </div>
-                  {!notification.read && (
-                    <div className="absolute top-4 right-4 w-2 h-2 bg-primary rounded-full" />
-                  )}
                 </div>
               );
             })

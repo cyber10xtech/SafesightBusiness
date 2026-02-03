@@ -1,4 +1,4 @@
-import { Briefcase, Bell, ArrowLeft } from "lucide-react";
+import { Shield, Bell, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface AppHeaderProps {
@@ -9,7 +9,7 @@ interface AppHeaderProps {
 }
 
 const AppHeader = ({ 
-  title = "ProConnect", 
+  title = "Safesearch Business", 
   showBack = false, 
   showNotifications = true,
   notificationCount = 0 
@@ -24,7 +24,7 @@ const AppHeader = ({
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
         ) : (
-          <Briefcase className="w-6 h-6 text-primary" />
+          <Shield className="w-6 h-6 text-primary" />
         )}
         <span className="font-bold text-lg text-foreground">{title}</span>
       </div>
