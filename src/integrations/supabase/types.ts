@@ -75,6 +75,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "bookings_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       conversations: {
@@ -112,6 +119,13 @@ export type Database = {
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -196,6 +210,13 @@ export type Database = {
             columns: ["professional_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
             referencedColumns: ["id"]
           },
         ]
@@ -411,11 +432,62 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "reviews_professional_id_fkey"
+            columns: ["professional_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      profiles_public: {
+        Row: {
+          account_type: string | null
+          bio: string | null
+          contract_rate: string | null
+          created_at: string | null
+          daily_rate: string | null
+          documents_uploaded: boolean | null
+          full_name: string | null
+          id: string | null
+          profession: string | null
+          skills: string[] | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          account_type?: string | null
+          bio?: string | null
+          contract_rate?: string | null
+          created_at?: string | null
+          daily_rate?: string | null
+          documents_uploaded?: boolean | null
+          full_name?: string | null
+          id?: string | null
+          profession?: string | null
+          skills?: string[] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          account_type?: string | null
+          bio?: string | null
+          contract_rate?: string | null
+          created_at?: string | null
+          daily_rate?: string | null
+          documents_uploaded?: boolean | null
+          full_name?: string | null
+          id?: string | null
+          profession?: string | null
+          skills?: string[] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       is_owner_of_profile: {
