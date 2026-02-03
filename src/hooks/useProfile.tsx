@@ -16,6 +16,7 @@ export interface Profile {
   contract_rate: string | null;
   skills: string[];
   documents_uploaded: boolean;
+  avatar_url: string | null;
   created_at: string;
   updated_at: string;
 }

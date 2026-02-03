@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,19 +15,19 @@ const EditProfile = () => {
   const { profile, loading: profileLoading, updateProfile } = useProfile();
   
   const [formData, setFormData] = useState({
-    full_name: profile?.full_name || "",
-    profession: profile?.profession || "",
-    bio: profile?.bio || "",
-    location: profile?.location || "",
-    phone_number: profile?.phone_number || "",
-    whatsapp_number: profile?.whatsapp_number || "",
-    daily_rate: profile?.daily_rate || "",
-    contract_rate: profile?.contract_rate || "",
+    full_name: "",
+    profession: "",
+    bio: "",
+    location: "",
+    phone_number: "",
+    whatsapp_number: "",
+    daily_rate: "",
+    contract_rate: "",
   });
   const [saving, setSaving] = useState(false);
 
   // Update form data when profile loads
-  useState(() => {
+  useEffect(() => {
     if (profile) {
       setFormData({
         full_name: profile.full_name || "",
@@ -40,7 +40,7 @@ const EditProfile = () => {
         contract_rate: profile.contract_rate || "",
       });
     }
-  });
+  }, [profile]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData(prev => ({
@@ -181,7 +181,7 @@ const EditProfile = () => {
               name="daily_rate"
               value={formData.daily_rate}
               onChange={handleChange}
-              placeholder="e.g. $150/day"
+              placeholder="e.g. ₦15,000/day"
             />
           </div>
 
@@ -192,7 +192,7 @@ const EditProfile = () => {
               name="contract_rate"
               value={formData.contract_rate}
               onChange={handleChange}
-              placeholder="e.g. $50/hour"
+              placeholder="e.g. ₦5,000/hour"
             />
           </div>
         </div>

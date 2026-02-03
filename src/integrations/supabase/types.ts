@@ -298,6 +298,7 @@ export type Database = {
       profiles: {
         Row: {
           account_type: string
+          avatar_url: string | null
           bio: string | null
           contract_rate: string | null
           created_at: string
@@ -315,6 +316,7 @@ export type Database = {
         }
         Insert: {
           account_type: string
+          avatar_url?: string | null
           bio?: string | null
           contract_rate?: string | null
           created_at?: string
@@ -332,6 +334,7 @@ export type Database = {
         }
         Update: {
           account_type?: string
+          avatar_url?: string | null
           bio?: string | null
           contract_rate?: string | null
           created_at?: string
@@ -446,6 +449,7 @@ export type Database = {
       profiles_public: {
         Row: {
           account_type: string | null
+          avatar_url: string | null
           bio: string | null
           contract_rate: string | null
           created_at: string | null
@@ -460,6 +464,7 @@ export type Database = {
         }
         Insert: {
           account_type?: string | null
+          avatar_url?: string | null
           bio?: string | null
           contract_rate?: string | null
           created_at?: string | null
@@ -474,6 +479,7 @@ export type Database = {
         }
         Update: {
           account_type?: string | null
+          avatar_url?: string | null
           bio?: string | null
           contract_rate?: string | null
           created_at?: string | null
