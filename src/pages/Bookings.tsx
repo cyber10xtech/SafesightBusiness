@@ -1,14 +1,23 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Calendar, Loader2, Phone, MessageSquare } from "lucide-react";
+import { Calendar, Loader2, Phone, MessageSquare, User } from "lucide-react";
 import AppHeader from "@/components/layout/AppHeader";
 import BottomNav from "@/components/layout/BottomNav";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type TabFilter = "all" | "pending" | "confirmed" | "completed";
+
+interface Customer {
+  id: string;
+  full_name: string;
+  avatar_url: string | null;
+  phone: string | null;
+}
 
 interface Booking {
   id: string;
@@ -22,9 +31,11 @@ interface Booking {
   notes: string | null;
   created_at: string;
   customer_id: string;
+  customer?: Customer;
 }
 
 const Bookings = () => {
+  const navigate = useNavigate();
   const { profile } = useProfile();
   const [activeTab, setActiveTab] = useState<TabFilter>("all");
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -37,7 +48,10 @@ const Bookings = () => {
       try {
         const { data, error } = await supabase
           .from("bookings")
-          .select("*")
+          .select(`
+            *,
+            customer:customer_profiles(id, full_name, avatar_url, phone)
+          `)
           .eq("professional_id", profile.id)
           .order("scheduled_date", { ascending: false });
 
@@ -74,6 +88,48 @@ const Bookings = () => {
       toast.success(`Booking ${newStatus}`);
     } catch (err) {
       toast.error("Failed to update booking");
+    }
+  };
+
+  const startConversation = async (customerId: string, customerName: string) => {
+    if (!profile?.id) return;
+
+    try {
+      // Check if conversation already exists
+      const { data: existing } = await supabase
+        .from("conversations")
+        .select("id")
+        .eq("professional_id", profile.id)
+        .eq("customer_id", customerId)
+        .single();
+
+      if (existing) {
+        navigate(`/chat/${existing.id}`);
+        return;
+      }
+
+      // Create new conversation
+      const { data: newConv, error } = await supabase
+        .from("conversations")
+        .insert({
+          professional_id: profile.id,
+          customer_id: customerId,
+        })
+        .select("id")
+        .single();
+
+      if (error) throw error;
+      navigate(`/chat/${newConv.id}`);
+    } catch (err) {
+      toast.error("Failed to start conversation");
+    }
+  };
+
+  const callCustomer = (phone: string | null | undefined) => {
+    if (phone) {
+      window.open(`tel:${phone}`, "_self");
+    } else {
+      toast.error("Customer phone not available");
     }
   };
 
@@ -151,6 +207,40 @@ const Bookings = () => {
         ) : (
           filteredBookings.map((booking) => (
             <div key={booking.id} className="bg-card rounded-xl border border-border p-4 space-y-3">
+              {/* Customer Info */}
+              <div className="flex items-center gap-3 pb-3 border-b border-border">
+                <Avatar className="w-10 h-10">
+                  <AvatarImage src={booking.customer?.avatar_url || undefined} />
+                  <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                    {booking.customer?.full_name?.split(" ").map(n => n[0]).join("") || <User className="w-4 h-4" />}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-medium text-foreground truncate">
+                    {booking.customer?.full_name || "Customer"}
+                  </h4>
+                  <p className="text-xs text-muted-foreground">Customer</p>
+                </div>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => callCustomer(booking.customer?.phone)}
+                  >
+                    <Phone className="w-4 h-4 text-muted-foreground" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => startConversation(booking.customer_id, booking.customer?.full_name || "Customer")}
+                  >
+                    <MessageSquare className="w-4 h-4 text-muted-foreground" />
+                  </Button>
+                </div>
+              </div>
+
               {/* Header */}
               <div className="flex justify-between items-start">
                 <div>
