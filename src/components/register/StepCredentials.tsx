@@ -1,4 +1,4 @@
-import { Mail, Lock } from "lucide-react";
+import { Mail, Lock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,12 +9,13 @@ interface StepCredentialsProps {
   onUpdate: (data: Partial<RegistrationData>) => void;
   onNext: () => void;
   onBack: () => void;
+  isSubmitting?: boolean;
 }
 
-const StepCredentials = ({ data, onUpdate, onNext, onBack }: StepCredentialsProps) => {
+const StepCredentials = ({ data, onUpdate, onNext, onBack, isSubmitting = false }: StepCredentialsProps) => {
   const accountTypeLabel = data.accountType === "professional" ? "Professional" : "Handyman";
 
-  const isValid = data.email && data.password.length >= 8 && data.password === data.confirmPassword;
+  const isValid = data.email && data.password.length >= 6 && data.password === data.confirmPassword;
 
   return (
     <div className="space-y-6">
@@ -42,6 +43,7 @@ const StepCredentials = ({ data, onUpdate, onNext, onBack }: StepCredentialsProp
               value={data.email}
               onChange={(e) => onUpdate({ email: e.target.value })}
               className="pl-11 h-12 rounded-xl"
+              disabled={isSubmitting}
             />
           </div>
         </div>
@@ -53,10 +55,11 @@ const StepCredentials = ({ data, onUpdate, onNext, onBack }: StepCredentialsProp
             <Input
               id="password"
               type="password"
-              placeholder="At least 8 characters"
+              placeholder="At least 6 characters"
               value={data.password}
               onChange={(e) => onUpdate({ password: e.target.value })}
               className="pl-11 h-12 rounded-xl"
+              disabled={isSubmitting}
             />
           </div>
         </div>
@@ -72,22 +75,42 @@ const StepCredentials = ({ data, onUpdate, onNext, onBack }: StepCredentialsProp
               value={data.confirmPassword}
               onChange={(e) => onUpdate({ confirmPassword: e.target.value })}
               className="pl-11 h-12 rounded-xl"
+              disabled={isSubmitting}
             />
           </div>
         </div>
+
+        {data.password && data.confirmPassword && data.password !== data.confirmPassword && (
+          <p className="text-sm text-destructive">Passwords don't match</p>
+        )}
+      </div>
+
+      {/* Email verification notice */}
+      <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
+        <p className="text-sm text-foreground font-medium">Email Verification Required</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          After registration, you'll need to verify your email before signing in.
+        </p>
       </div>
 
       {/* Buttons */}
       <div className="flex gap-3 pt-4 border-t border-border">
-        <Button variant="outline" onClick={onBack} className="flex-1 h-12 rounded-xl">
+        <Button variant="outline" onClick={onBack} className="flex-1 h-12 rounded-xl" disabled={isSubmitting}>
           Back
         </Button>
         <Button
           onClick={onNext}
-          disabled={!isValid}
+          disabled={!isValid || isSubmitting}
           className="flex-1 h-12 bg-primary text-primary-foreground rounded-xl"
         >
-          Continue
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin mr-2" />
+              Creating...
+            </>
+          ) : (
+            "Continue"
+          )}
         </Button>
       </div>
     </div>

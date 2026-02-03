@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Download, Smartphone, Share, Plus, CheckCircle, ArrowLeft } from "lucide-react";
+import { Download, Smartphone, Share, Plus, CheckCircle, ArrowLeft, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
@@ -15,16 +15,13 @@ const Install = () => {
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    // Check if already installed
     if (window.matchMedia("(display-mode: standalone)").matches) {
       setIsInstalled(true);
     }
 
-    // Check if iOS
     const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     setIsIOS(iOS);
 
-    // Listen for install prompt
     const handler = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -60,8 +57,13 @@ const Install = () => {
           <ArrowLeft className="w-5 h-5" />
           Back
         </button>
-        <h1 className="text-2xl font-bold">Install ProConnect</h1>
-        <p className="text-white/80 mt-1">Add to your home screen for the best experience</p>
+        <div className="flex items-center gap-3">
+          <Shield className="w-8 h-8" />
+          <div>
+            <h1 className="text-2xl font-bold">Safesearch Business</h1>
+            <p className="text-white/80">Add to your home screen</p>
+          </div>
+        </div>
       </div>
 
       <div className="p-6 -mt-4">
@@ -73,7 +75,7 @@ const Install = () => {
               </div>
               <h2 className="text-xl font-bold text-foreground mb-2">Already Installed!</h2>
               <p className="text-muted-foreground">
-                ProConnect is already installed on your device. Open it from your home screen.
+                Safesearch Business is already installed. Open it from your home screen.
               </p>
               <Button 
                 onClick={() => navigate("/dashboard")} 
@@ -123,7 +125,7 @@ const Install = () => {
                   </div>
                   <div>
                     <p className="font-medium text-foreground">Tap "Add"</p>
-                    <p className="text-sm text-muted-foreground">ProConnect will appear on your home screen</p>
+                    <p className="text-sm text-muted-foreground">The app will appear on your home screen</p>
                   </div>
                 </div>
               </div>
@@ -133,7 +135,7 @@ const Install = () => {
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Download className="w-10 h-10 text-primary" />
               </div>
-              <h2 className="text-xl font-bold text-foreground mb-2">Install ProConnect</h2>
+              <h2 className="text-xl font-bold text-foreground mb-2">Install Safesearch Business</h2>
               <p className="text-muted-foreground mb-6">
                 Get quick access from your home screen. Works offline!
               </p>
@@ -179,7 +181,7 @@ const Install = () => {
                   </div>
                   <div>
                     <p className="font-medium text-foreground">Confirm installation</p>
-                    <p className="text-sm text-muted-foreground">ProConnect will appear on your home screen</p>
+                    <p className="text-sm text-muted-foreground">The app will appear on your home screen</p>
                   </div>
                 </div>
               </div>
@@ -205,22 +207,6 @@ const Install = () => {
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             <CheckCircle className="w-5 h-5 text-success shrink-0" />
             <span>Full-screen experience</span>
-          </div>
-        </div>
-
-        {/* Direct links for testing */}
-        <div className="mt-8 p-4 bg-muted/30 rounded-xl">
-          <h3 className="font-semibold text-foreground mb-2">Test URLs</h3>
-          <p className="text-sm text-muted-foreground mb-3">
-            Open these links on your phone to install:
-          </p>
-          <div className="space-y-2 text-sm">
-            <div className="p-2 bg-background rounded-lg break-all font-mono text-xs">
-              Customer: {window.location.origin}/customer/install
-            </div>
-            <div className="p-2 bg-background rounded-lg break-all font-mono text-xs">
-              Professional: {window.location.origin}/install
-            </div>
           </div>
         </div>
       </div>
