@@ -13,8 +13,24 @@ const sanitizeSearchInput = (input: string, maxLength = 100): string => {
   return escapeIlikePattern(trimmed);
 };
 
+// Public profile type (without sensitive fields)
+export interface PublicProfile {
+  id: string;
+  user_id: string;
+  account_type: "professional" | "handyman";
+  full_name: string;
+  profession: string | null;
+  bio: string | null;
+  skills: string[];
+  daily_rate: string | null;
+  contract_rate: string | null;
+  documents_uploaded: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export const useProfessionals = () => {
-  const [professionals, setProfessionals] = useState<Profile[]>([]);
+  const [professionals, setProfessionals] = useState<PublicProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -25,17 +41,14 @@ export const useProfessionals = () => {
   }) => {
     try {
       setLoading(true);
+      // Use the public view that excludes sensitive data
       let query = supabase
-        .from("profiles")
+        .from("profiles_public")
         .select("*")
         .order("created_at", { ascending: false });
 
       if (filters?.profession) {
         query = query.eq("profession", filters.profession);
-      }
-      if (filters?.location) {
-        const sanitized = sanitizeSearchInput(filters.location);
-        query = query.ilike("location", `%${sanitized}%`);
       }
       if (filters?.search) {
         const sanitized = sanitizeSearchInput(filters.search);
@@ -45,7 +58,7 @@ export const useProfessionals = () => {
       const { data, error } = await query;
 
       if (error) throw error;
-      setProfessionals((data as Profile[]) || []);
+      setProfessionals((data as PublicProfile[]) || []);
     } catch (err) {
       setError(err as Error);
     } finally {
@@ -59,14 +72,15 @@ export const useProfessionals = () => {
 
   const getProfessionalById = async (id: string) => {
     try {
+      // Use public view for individual lookups too
       const { data, error } = await supabase
-        .from("profiles")
+        .from("profiles_public")
         .select("*")
         .eq("id", id)
         .single();
 
       if (error) throw error;
-      return { data, error: null };
+      return { data: data as PublicProfile, error: null };
     } catch (err) {
       return { data: null, error: err as Error };
     }

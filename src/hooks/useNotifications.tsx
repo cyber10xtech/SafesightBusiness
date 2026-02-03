@@ -153,7 +153,7 @@ export const useNotifications = (userType: 'customer' | 'professional' = 'custom
   };
 };
 
-// Helper function to create a notification
+// Helper function to create a notification via edge function
 export const createNotification = async (
   userId: string,
   userType: 'customer' | 'professional',
@@ -163,30 +163,37 @@ export const createNotification = async (
   data?: Record<string, string | number | boolean | null>
 ) => {
   try {
-    const insertData: {
-      user_id: string;
-      user_type: string;
-      type: string;
-      title: string;
-      message: string;
-      data?: Record<string, string | number | boolean | null>;
-    } = {
-      user_id: userId,
-      user_type: userType,
-      type,
-      title,
-      message,
-    };
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token;
     
-    if (data) {
-      insertData.data = data;
+    if (!token) {
+      throw new Error('Not authenticated');
     }
 
-    const { error } = await supabase
-      .from('notifications')
-      .insert([insertData]);
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-notification`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          user_type: userType,
+          type,
+          title,
+          message,
+          data,
+        }),
+      }
+    );
 
-    if (error) throw error;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create notification');
+    }
+
     return { error: null };
   } catch (error) {
     if (isDevelopment) {
