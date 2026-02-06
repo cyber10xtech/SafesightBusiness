@@ -60,6 +60,20 @@ const Register = () => {
     setFormData((prev) => ({ ...prev, ...data }));
   };
 
+  // Send welcome email via edge function
+  const sendWelcomeEmail = async (email: string, fullName: string, accountType: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("send-welcome-email", {
+        body: { email, fullName, accountType },
+      });
+      if (error) {
+        console.error("Welcome email error:", error);
+      }
+    } catch (err) {
+      console.error("Failed to send welcome email:", err);
+    }
+  };
+
   // Handle step 1 - create account first for document upload
   const handleCredentialsNext = async () => {
     if (formData.password !== formData.confirmPassword) {
@@ -97,6 +111,13 @@ const Register = () => {
     if (newUserId) {
       setUserId(newUserId);
     }
+
+    // Send welcome email (fire-and-forget)
+    sendWelcomeEmail(
+      formData.email,
+      formData.fullName || formData.email.split("@")[0],
+      formData.accountType
+    );
     
     setCurrentStep(2);
     toast.success("Account created! Complete your profile to continue.");
@@ -145,8 +166,8 @@ const Register = () => {
       await updateProfile();
       setIsSubmitting(false);
       
-      toast.success("Profile completed! Please check your email to verify your account before signing in.");
-      navigate("/sign-in");
+      toast.success("Profile completed! Welcome aboard!");
+      navigate("/dashboard");
     }
   };
 
