@@ -17,8 +17,19 @@ export interface Profile {
   skills: string[];
   documents_uploaded: boolean;
   avatar_url: string | null;
+  is_verified: boolean;
+  interests: string[];
   created_at: string;
   updated_at: string;
+}
+
+export interface ProStats {
+  pro_id: string;
+  jobs: number;
+  earnings: number;
+  rating: number;
+  views: number;
+  last_updated: string;
 }
 
 // Fields stored in profiles_private table
@@ -46,6 +57,8 @@ const fetchMergedProfile = async (userId: string): Promise<Profile | null> => {
     ...(profileData as Omit<Profile, "phone_number" | "whatsapp_number">),
     phone_number: privateData?.phone_number ?? null,
     whatsapp_number: privateData?.whatsapp_number ?? null,
+    is_verified: (profileData as any).is_verified ?? false,
+    interests: (profileData as any).interests ?? [],
   };
 };
 
