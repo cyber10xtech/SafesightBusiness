@@ -15,7 +15,7 @@ interface StepCredentialsProps {
 const StepCredentials = ({ data, onUpdate, onNext, onBack, isSubmitting = false }: StepCredentialsProps) => {
   const accountTypeLabel = data.accountType === "professional" ? "Professional" : "Handyman";
 
-  const isValid = data.email && data.password.length >= 6 && data.password === data.confirmPassword;
+  const isValid = data.email && data.password.length >= 8 && data.password === data.confirmPassword;
 
   return (
     <div className="space-y-6">
@@ -55,7 +55,7 @@ const StepCredentials = ({ data, onUpdate, onNext, onBack, isSubmitting = false 
             <Input
               id="password"
               type="password"
-              placeholder="At least 6 characters"
+              placeholder="At least 8 characters"
               value={data.password}
               onChange={(e) => onUpdate({ password: e.target.value })}
               className="pl-11 h-12 rounded-xl"
