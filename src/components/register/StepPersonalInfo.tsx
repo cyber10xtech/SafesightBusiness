@@ -5,40 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RegistrationData } from "@/pages/Register";
-
-const PROFESSIONS = [
-  "Electrician",
-  "Plumber",
-  "Carpenter",
-  "Painter",
-  "Mason / Bricklayer",
-  "Tiler",
-  "Welder",
-  "AC / HVAC Technician",
-  "Generator Technician",
-  "Auto Mechanic",
-  "Roofer",
-  "Landscaper / Gardener",
-  "Pest Control Specialist",
-  "Locksmith",
-  "Cleaner",
-  "Furniture Maker",
-  "Aluminium Fabricator",
-  "POP / Ceiling Installer",
-  "Solar Panel Installer",
-  "CCTV / Security Installer",
-  "Appliance Repair Technician",
-  "Phone / Laptop Repair",
-  "Tailor / Fashion Designer",
-  "Barber / Hairstylist",
-  "Makeup Artist",
-  "Photographer / Videographer",
-  "Event Planner / Decorator",
-  "Caterer / Cook",
-  "Driver",
-  "Dispatch Rider",
-  "Other",
-];
+import { PROFESSIONS } from "@/constants/professions";
 
 interface StepPersonalInfoProps {
   data: RegistrationData;
