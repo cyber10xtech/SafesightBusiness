@@ -3,6 +3,7 @@ import { FileText, Upload, X, Loader2, CheckCircle, AlertCircle } from "lucide-r
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RegistrationData } from "@/pages/Register";
+import { supabase } from "@/integrations/supabase/client";
 
 interface StepDocumentsProps {
   data: RegistrationData;
@@ -59,11 +60,19 @@ const StepDocuments = ({ data, onUpdate, onNext, onBack, userId }: StepDocuments
         formData.append('file', file);
         formData.append('fileName', file.name);
 
-        // Upload via edge function (bypasses RLS during registration)
+        // Get JWT token for authentication
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData?.session?.access_token;
+        if (!token) {
+          setError("Authentication required. Please try again.");
+          continue;
+        }
+
+        // Upload via edge function with JWT authentication
         const response = await fetch(`${SUPABASE_URL}/functions/v1/upload-document`, {
           method: 'POST',
           headers: {
-            'x-user-id': userId,
+            'Authorization': `Bearer ${token}`,
           },
           body: formData,
         });
@@ -99,11 +108,15 @@ const StepDocuments = ({ data, onUpdate, onNext, onBack, userId }: StepDocuments
     if (!userId) return;
 
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) return;
+
       const response = await fetch(`${SUPABASE_URL}/functions/v1/delete-document`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': userId,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ filePath }),
       });

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -22,13 +23,20 @@ const Verification = () => {
     setUploading(true);
     
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
+      if (!token) {
+        toast.error("Please sign in to upload documents");
+        return;
+      }
+
       const formData = new FormData();
       formData.append("file", file);
 
       const response = await fetch(`${SUPABASE_URL}/functions/v1/upload-document`, {
         method: "POST",
         headers: {
-          "x-user-id": user.id,
+          "Authorization": `Bearer ${token}`,
         },
         body: formData,
       });
