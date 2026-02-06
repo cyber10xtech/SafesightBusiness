@@ -1,9 +1,44 @@
-import { User, Briefcase, MapPin } from "lucide-react";
+import { User, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RegistrationData } from "@/pages/Register";
+
+const PROFESSIONS = [
+  "Electrician",
+  "Plumber",
+  "Carpenter",
+  "Painter",
+  "Mason / Bricklayer",
+  "Tiler",
+  "Welder",
+  "AC / HVAC Technician",
+  "Generator Technician",
+  "Auto Mechanic",
+  "Roofer",
+  "Landscaper / Gardener",
+  "Pest Control Specialist",
+  "Locksmith",
+  "Cleaner",
+  "Furniture Maker",
+  "Aluminium Fabricator",
+  "POP / Ceiling Installer",
+  "Solar Panel Installer",
+  "CCTV / Security Installer",
+  "Appliance Repair Technician",
+  "Phone / Laptop Repair",
+  "Tailor / Fashion Designer",
+  "Barber / Hairstylist",
+  "Makeup Artist",
+  "Photographer / Videographer",
+  "Event Planner / Decorator",
+  "Caterer / Cook",
+  "Driver",
+  "Dispatch Rider",
+  "Other",
+];
 
 interface StepPersonalInfoProps {
   data: RegistrationData;
@@ -42,17 +77,21 @@ const StepPersonalInfo = ({ data, onUpdate, onNext, onBack }: StepPersonalInfoPr
 
         <div className="space-y-2">
           <Label htmlFor="profession">Profession *</Label>
-          <div className="relative">
-            <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              id="profession"
-              type="text"
-              placeholder="e.g., Licensed Electrician, Master Plumber"
-              value={data.profession}
-              onChange={(e) => onUpdate({ profession: e.target.value })}
-              className="pl-11 h-12 rounded-xl"
-            />
-          </div>
+          <Select
+            value={data.profession}
+            onValueChange={(value) => onUpdate({ profession: value })}
+          >
+            <SelectTrigger className="h-12 rounded-xl">
+              <SelectValue placeholder="Select your profession" />
+            </SelectTrigger>
+            <SelectContent>
+              {PROFESSIONS.map((profession) => (
+                <SelectItem key={profession} value={profession}>
+                  {profession}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-2">
