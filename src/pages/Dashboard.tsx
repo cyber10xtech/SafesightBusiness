@@ -15,6 +15,7 @@ import AppHeader from "@/components/layout/AppHeader";
 import BottomNav from "@/components/layout/BottomNav";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useProStats } from "@/hooks/useProStats";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,6 +31,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { profile, loading: profileLoading, profileExists } = useProfile();
+  const { stats: proStats } = useProStats();
   const [stats, setStats] = useState<BookingStats>({ total: 0, completed: 0, pending: 0, thisMonthEarnings: 0 });
   const [recentBookings, setRecentBookings] = useState<any[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -107,7 +109,7 @@ const Dashboard = () => {
   const statsDisplay = [
     { icon: Calendar, label: "Total Bookings", value: stats.total.toString(), trend: "-", trendUp: true },
     { icon: DollarSign, label: "This Month", value: formatCurrency(stats.thisMonthEarnings), trend: "-", trendUp: true },
-    { icon: Star, label: "Avg Rating", value: "-", trend: "-", trendUp: true },
+    { icon: Star, label: "Avg Rating", value: proStats?.rating?.toFixed(1) ?? "-", trend: "-", trendUp: true },
     { icon: Briefcase, label: "Completed Jobs", value: stats.completed.toString(), trend: "-", trendUp: true },
   ];
 

@@ -19,6 +19,7 @@ export type Database = {
           created_at: string
           customer_id: string
           description: string | null
+          duration: string | null
           id: string
           notes: string | null
           professional_id: string
@@ -34,6 +35,7 @@ export type Database = {
           created_at?: string
           customer_id: string
           description?: string | null
+          duration?: string | null
           id?: string
           notes?: string | null
           professional_id: string
@@ -49,6 +51,7 @@ export type Database = {
           created_at?: string
           customer_id?: string
           description?: string | null
+          duration?: string | null
           id?: string
           notes?: string | null
           professional_id?: string
@@ -295,6 +298,48 @@ export type Database = {
         }
         Relationships: []
       }
+      pro_stats: {
+        Row: {
+          earnings: number | null
+          jobs: number | null
+          last_updated: string | null
+          pro_id: string
+          rating: number | null
+          views: number | null
+        }
+        Insert: {
+          earnings?: number | null
+          jobs?: number | null
+          last_updated?: string | null
+          pro_id: string
+          rating?: number | null
+          views?: number | null
+        }
+        Update: {
+          earnings?: number | null
+          jobs?: number | null
+          last_updated?: string | null
+          pro_id?: string
+          rating?: number | null
+          views?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pro_stats_pro_id_fkey"
+            columns: ["pro_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pro_stats_pro_id_fkey"
+            columns: ["pro_id"]
+            isOneToOne: true
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           account_type: string
@@ -306,6 +351,8 @@ export type Database = {
           documents_uploaded: boolean | null
           full_name: string
           id: string
+          interests: string[] | null
+          is_verified: boolean | null
           location: string | null
           profession: string | null
           skills: string[] | null
@@ -322,6 +369,8 @@ export type Database = {
           documents_uploaded?: boolean | null
           full_name: string
           id?: string
+          interests?: string[] | null
+          is_verified?: boolean | null
           location?: string | null
           profession?: string | null
           skills?: string[] | null
@@ -338,6 +387,8 @@ export type Database = {
           documents_uploaded?: boolean | null
           full_name?: string
           id?: string
+          interests?: string[] | null
+          is_verified?: boolean | null
           location?: string | null
           profession?: string | null
           skills?: string[] | null
@@ -550,7 +601,12 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      booking_status_enum:
+        | "PENDING"
+        | "ACCEPTED"
+        | "DECLINED"
+        | "COMPLETED"
+        | "CANCELLED"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -677,6 +733,14 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      booking_status_enum: [
+        "PENDING",
+        "ACCEPTED",
+        "DECLINED",
+        "COMPLETED",
+        "CANCELLED",
+      ],
+    },
   },
 } as const
