@@ -496,8 +496,20 @@ export type Database = {
       }
     }
     Functions: {
+      get_limited_customer_info: {
+        Args: { customer_profile_id: string }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          id: string
+        }[]
+      }
       is_owner_of_profile: {
         Args: { profile_user_id: string }
+        Returns: boolean
+      }
+      professional_can_view_customer: {
+        Args: { customer_profile_id: string }
         Returns: boolean
       }
     }

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Send, Paperclip, Image, MoreVertical, Phone, Loader2 } from "lucide-react";
+import { Send, Paperclip, Image, MoreVertical, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,7 +20,6 @@ interface Customer {
   id: string;
   full_name: string;
   avatar_url: string | null;
-  phone: string | null;
 }
 
 const Chat = () => {
@@ -45,7 +44,7 @@ const Chat = () => {
           .from("conversations")
           .select(`
             *,
-            customer:customer_profiles(id, full_name, avatar_url, phone)
+            customer:customer_profiles(id, full_name, avatar_url)
           `)
           .eq("id", conversationId)
           .single();
@@ -184,11 +183,6 @@ const Chat = () => {
     return groups;
   }, {} as Record<string, Message[]>);
 
-  const handlePhoneCall = () => {
-    if (customer?.phone) {
-      window.open(`tel:${customer.phone}`, "_self");
-    }
-  };
 
   if (loading) {
     return (
@@ -225,14 +219,6 @@ const Chat = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          {customer?.phone && (
-            <button 
-              onClick={handlePhoneCall}
-              className="p-2 hover:bg-muted rounded-full transition-colors"
-            >
-              <Phone className="w-5 h-5 text-muted-foreground" />
-            </button>
-          )}
           <button className="p-2 hover:bg-muted rounded-full transition-colors">
             <MoreVertical className="w-5 h-5 text-muted-foreground" />
           </button>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Calendar, Loader2, Phone, MessageSquare, User } from "lucide-react";
+import { Calendar, Loader2, MessageSquare, User } from "lucide-react";
 import AppHeader from "@/components/layout/AppHeader";
 import BottomNav from "@/components/layout/BottomNav";
 import { useProfile } from "@/hooks/useProfile";
@@ -16,7 +16,6 @@ interface Customer {
   id: string;
   full_name: string;
   avatar_url: string | null;
-  phone: string | null;
 }
 
 interface Booking {
@@ -50,7 +49,7 @@ const Bookings = () => {
           .from("bookings")
           .select(`
             *,
-            customer:customer_profiles(id, full_name, avatar_url, phone)
+            customer:customer_profiles(id, full_name, avatar_url)
           `)
           .eq("professional_id", profile.id)
           .order("scheduled_date", { ascending: false });
@@ -125,13 +124,6 @@ const Bookings = () => {
     }
   };
 
-  const callCustomer = (phone: string | null | undefined) => {
-    if (phone) {
-      window.open(`tel:${phone}`, "_self");
-    } else {
-      toast.error("Customer phone not available");
-    }
-  };
 
   const filteredBookings = activeTab === "all" 
     ? bookings 
@@ -222,14 +214,6 @@ const Bookings = () => {
                   <p className="text-xs text-muted-foreground">Customer</p>
                 </div>
                 <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => callCustomer(booking.customer?.phone)}
-                  >
-                    <Phone className="w-4 h-4 text-muted-foreground" />
-                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"
