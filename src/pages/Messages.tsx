@@ -36,18 +36,36 @@ const Messages = () => {
       try {
         const { data, error } = await supabase
           .from("conversations")
-          .select(`
-            *,
-            customer:customer_profiles(full_name, avatar_url)
-          `)
+          .select("*")
           .eq("professional_id", profile.id)
           .order("last_message_at", { ascending: false });
 
         if (error) throw error;
 
+        // Fetch customer info securely via RPC (only returns safe fields)
+        const uniqueCustomerIds = [...new Set((data || []).map(c => c.customer_id))];
+        const customerMap: Record<string, { full_name: string; avatar_url: string | null }> = {};
+
+        await Promise.all(
+          uniqueCustomerIds.map(async (customerId) => {
+            const { data: customerData } = await supabase.rpc("get_limited_customer_info", {
+              customer_profile_id: customerId,
+            });
+            if (customerData && customerData.length > 0) {
+              customerMap[customerId] = customerData[0];
+            }
+          })
+        );
+
+        // Attach customer info to conversations
+        const dataWithCustomers = (data || []).map(c => ({
+          ...c,
+          customer: customerMap[c.customer_id] || undefined,
+        }));
+
         // Fetch last message for each conversation
         const conversationsWithMessages = await Promise.all(
-          (data || []).map(async (conv) => {
+          dataWithCustomers.map(async (conv) => {
             const { data: messages } = await supabase
               .from("messages")
               .select("content, read_at")

@@ -39,18 +39,22 @@ const Chat = () => {
       if (!conversationId || !profile?.id) return;
 
       try {
-        // Fetch conversation with customer info
+        // Fetch conversation
         const { data: conv, error: convError } = await supabase
           .from("conversations")
-          .select(`
-            *,
-            customer:customer_profiles(id, full_name, avatar_url)
-          `)
+          .select("*")
           .eq("id", conversationId)
           .single();
 
         if (convError) throw convError;
-        setCustomer(conv.customer);
+
+        // Fetch customer info securely via RPC (only returns safe fields)
+        const { data: customerData } = await supabase.rpc("get_limited_customer_info", {
+          customer_profile_id: conv.customer_id,
+        });
+        if (customerData && customerData.length > 0) {
+          setCustomer(customerData[0]);
+        }
 
         // Fetch messages
         const { data: msgs, error: msgsError } = await supabase

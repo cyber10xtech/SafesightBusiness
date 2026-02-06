@@ -47,15 +47,33 @@ const Bookings = () => {
       try {
         const { data, error } = await supabase
           .from("bookings")
-          .select(`
-            *,
-            customer:customer_profiles(id, full_name, avatar_url)
-          `)
+          .select("*")
           .eq("professional_id", profile.id)
           .order("scheduled_date", { ascending: false });
 
         if (error) throw error;
-        setBookings(data || []);
+
+        // Fetch customer info securely via RPC (only returns safe fields)
+        const uniqueCustomerIds = [...new Set((data || []).map(b => b.customer_id))];
+        const customerMap: Record<string, Customer> = {};
+
+        await Promise.all(
+          uniqueCustomerIds.map(async (customerId) => {
+            const { data: customerData } = await supabase.rpc("get_limited_customer_info", {
+              customer_profile_id: customerId,
+            });
+            if (customerData && customerData.length > 0) {
+              customerMap[customerId] = customerData[0];
+            }
+          })
+        );
+
+        const bookingsWithCustomers = (data || []).map(b => ({
+          ...b,
+          customer: customerMap[b.customer_id] || undefined,
+        }));
+
+        setBookings(bookingsWithCustomers);
       } catch (err) {
         if (import.meta.env.DEV) {
           console.error("Error fetching bookings:", err);
