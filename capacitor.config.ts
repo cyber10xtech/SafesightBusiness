@@ -2,7 +2,7 @@
 
 const config = {
   appId: 'com.cyber10xtech.businesshandyman',
-  appName: 'Safesight#',
+  appName: 'Safesight Business',
   // other configurations...
 };
 

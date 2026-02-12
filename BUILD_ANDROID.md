@@ -1,8 +1,8 @@
 # Building Android APKs
 
 This project contains two apps:
-- **HandyConnect** - Customer app for finding professionals
-- **ProConnect** - Professional app for managing bookings
+- **Safesight Business** - Customer app for finding professionals
+- **Safesight Business Pro** - Professional app for managing bookings
 
 ## Prerequisites
 
@@ -45,7 +45,7 @@ chmod +x scripts/build-android.sh
 
 **Option B: Manual steps (Windows/all platforms)**
 
-For HandyConnect (Customer):
+For Safesight Business (Customer):
 ```bash
 copy capacitor.config.customer.ts capacitor.config.ts
 npm run build
@@ -53,7 +53,7 @@ npx cap sync android
 npx cap open android
 ```
 
-For ProConnect (Professional):
+For Safesight Business Pro (Professional):
 ```bash
 copy capacitor.config.professional.ts capacitor.config.ts
 npm run build
@@ -71,8 +71,8 @@ npx cap open android
 ### 5. Rename and Save
 
 After building each app, rename the APK:
-- `app-debug.apk` → `HandyConnect.apk`
-- `app-debug.apk` → `ProConnect.apk`
+- `app-debug.apk` → `SafesightBusiness.apk`
+- `app-debug.apk` → `SafesightBusinessPro.apk`
 
 ## Troubleshooting
 

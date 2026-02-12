@@ -162,7 +162,7 @@ const Settings = () => {
 
         {/* App Version */}
         <div className="text-center pt-8 pb-4">
-          <p className="text-sm text-muted-foreground">ProConnect v1.0.0</p>
+          <p className="text-sm text-muted-foreground">Safesight Business v1.0.0</p>
         </div>
       </div>
     </div>

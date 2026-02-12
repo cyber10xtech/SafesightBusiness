@@ -20,8 +20,8 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "robots.txt"],
       manifest: {
-        name: "Safesearch Business",
-        short_name: "Safesearch",
+        name: "Safesight Business",
+        short_name: "Safesight",
         description: "Connect with clients, manage bookings, and grow your business",
         theme_color: "#2563eb",
         background_color: "#ffffff",

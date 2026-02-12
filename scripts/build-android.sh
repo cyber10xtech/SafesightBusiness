@@ -8,20 +8,20 @@ set -e
 APP=${1:-both}
 
 build_customer() {
-  echo "🔨 Building HandyConnect (Customer App)..."
+  echo "🔨 Building Safesight Business (Customer App)..."
   cp capacitor.config.customer.ts capacitor.config.ts
   npm run build
   npx cap sync android
-  echo "✅ HandyConnect ready! Open Android Studio with: npx cap open android"
+  echo "✅ Safesight Business ready! Open Android Studio with: npx cap open android"
   echo "   Then: Build → Build Bundle(s) / APK(s) → Build APK(s)"
 }
 
 build_professional() {
-  echo "🔨 Building ProConnect (Professional App)..."
+  echo "🔨 Building Safesight Business Pro (Professional App)..."
   cp capacitor.config.professional.ts capacitor.config.ts
   npm run build
   npx cap sync android
-  echo "✅ ProConnect ready! Open Android Studio with: npx cap open android"
+  echo "✅ Safesight Business Pro ready! Open Android Studio with: npx cap open android"
   echo "   Then: Build → Build Bundle(s) / APK(s) → Build APK(s)"
 }
 
@@ -38,7 +38,7 @@ case $APP in
     echo "⚠️  Save the APK before building the next app!"
     echo "   APK location: android/app/build/outputs/apk/debug/app-debug.apk"
     echo ""
-    read -p "Press Enter to continue building ProConnect..."
+    read -p "Press Enter to continue building Safesight Business Pro..."
     build_professional
     ;;
   *)

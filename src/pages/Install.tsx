@@ -60,7 +60,7 @@ const Install = () => {
         <div className="flex items-center gap-3">
           <Shield className="w-8 h-8" />
           <div>
-            <h1 className="text-2xl font-bold">Safesearch Business</h1>
+            <h1 className="text-2xl font-bold">Safesight Business</h1>
             <p className="text-white/80">Add to your home screen</p>
           </div>
         </div>
@@ -75,7 +75,7 @@ const Install = () => {
               </div>
               <h2 className="text-xl font-bold text-foreground mb-2">Already Installed!</h2>
               <p className="text-muted-foreground">
-                Safesearch Business is already installed. Open it from your home screen.
+                Safesight Business is already installed. Open it from your home screen.
               </p>
               <Button 
                 onClick={() => navigate("/dashboard")} 
@@ -135,7 +135,7 @@ const Install = () => {
               <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Download className="w-10 h-10 text-primary" />
               </div>
-              <h2 className="text-xl font-bold text-foreground mb-2">Install Safesearch Business</h2>
+              <h2 className="text-xl font-bold text-foreground mb-2">Install Safesight Business</h2>
               <p className="text-muted-foreground mb-6">
                 Get quick access from your home screen. Works offline!
               </p>

@@ -51,7 +51,7 @@ const Welcome = () => {
         <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
           <Shield className="w-12 h-12 text-primary" />
         </div>
-        <h1 className="text-3xl font-bold text-white mb-2">Safesearch Business</h1>
+        <h1 className="text-3xl font-bold text-white mb-2">Safesight Business</h1>
         <p className="text-white/80">For verified professionals</p>
       </div>
 

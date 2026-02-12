@@ -141,7 +141,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AppHeader title="Safesearch Business" notificationCount={stats.pending} />
+      <AppHeader title="Safesight Business" notificationCount={stats.pending} />
 
       <div className="p-4 space-y-6">
         {/* Welcome */}

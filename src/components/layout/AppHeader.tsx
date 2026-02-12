@@ -9,7 +9,7 @@ interface AppHeaderProps {
 }
 
 const AppHeader = ({ 
-  title = "Safesearch Business", 
+  title = "Safesight Business", 
   showBack = false, 
   showNotifications = true,
   notificationCount = 0 
