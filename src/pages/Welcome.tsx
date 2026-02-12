@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { User, CheckCircle, Download, Shield } from "lucide-react";
+import { User, CheckCircle, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-
+import logoBusiness from "@/assets/logo-business.jpg";
 const Welcome = () => {
   const navigate = useNavigate();
   const [showInstall, setShowInstall] = useState(false);
@@ -48,11 +48,11 @@ const Welcome = () => {
 
       {/* Logo and Title */}
       <div className="text-center mb-8">
-        <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-          <Shield className="w-12 h-12 text-primary" />
+        <div className="w-24 h-24 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden">
+          <img src={logoBusiness} alt="Safesight Business Logo" className="w-full h-full object-cover" />
         </div>
         <h1 className="text-3xl font-bold text-white mb-2">Safesight Business</h1>
-        <p className="text-white/80">For verified professionals</p>
+        <p className="text-white/80">Your construction job market solution</p>
       </div>
 
       {/* Sign In Button */}

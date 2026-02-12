@@ -1,5 +1,6 @@
-import { Shield, Bell, ArrowLeft } from "lucide-react";
+import { Bell, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import logoBusiness from "@/assets/logo-business.jpg";
 
 interface AppHeaderProps {
   title?: string;
@@ -24,7 +25,7 @@ const AppHeader = ({
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
         ) : (
-          <Shield className="w-6 h-6 text-primary" />
+          <img src={logoBusiness} alt="Safesight" className="w-7 h-7 rounded-md object-cover" />
         )}
         <span className="font-bold text-lg text-foreground">{title}</span>
       </div>
