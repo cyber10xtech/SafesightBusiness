@@ -1,18 +1,9 @@
-import { useState, useEffect } from "react";
-import { User, CheckCircle, Download } from "lucide-react";
+import { User, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import logoBusiness from "@/assets/logo-business.jpg";
 const Welcome = () => {
   const navigate = useNavigate();
-  const [showInstall, setShowInstall] = useState(false);
-
-  useEffect(() => {
-    const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
-    if (!isStandalone) {
-      setShowInstall(true);
-    }
-  }, []);
 
   const features = [
     {
@@ -35,17 +26,6 @@ const Welcome = () => {
 
   return (
     <div className="min-h-screen gradient-primary flex flex-col items-center justify-center px-6 py-12">
-      {/* Install Banner */}
-      {showInstall && (
-        <button
-          onClick={() => navigate("/install")}
-          className="fixed top-4 right-4 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 hover:bg-white/30 transition-colors"
-        >
-          <Download className="w-4 h-4" />
-          Install App
-        </button>
-      )}
-
       {/* Logo and Title */}
       <div className="text-center mb-8">
         <div className="w-24 h-24 bg-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg overflow-hidden">
