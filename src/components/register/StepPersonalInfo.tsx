@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RegistrationData } from "@/pages/Register";
-import { PROFESSIONS } from "@/constants/professions";
+import { PROFESSIONAL_PROFESSIONS, HANDYMAN_PROFESSIONS } from "@/constants/professions";
 
 interface StepPersonalInfoProps {
   data: RegistrationData;
@@ -16,6 +16,7 @@ interface StepPersonalInfoProps {
 
 const StepPersonalInfo = ({ data, onUpdate, onNext, onBack }: StepPersonalInfoProps) => {
   const isValid = data.fullName && data.profession && data.bio && data.location;
+  const professions = data.accountType === "professional" ? PROFESSIONAL_PROFESSIONS : HANDYMAN_PROFESSIONS;
 
   return (
     <div className="space-y-6">
@@ -52,7 +53,7 @@ const StepPersonalInfo = ({ data, onUpdate, onNext, onBack }: StepPersonalInfoPr
               <SelectValue placeholder="Select your profession" />
             </SelectTrigger>
             <SelectContent>
-              {PROFESSIONS.map((profession) => (
+              {professions.map((profession) => (
                 <SelectItem key={profession} value={profession}>
                   {profession}
                 </SelectItem>
