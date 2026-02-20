@@ -15,7 +15,11 @@ interface StepCredentialsProps {
 const StepCredentials = ({ data, onUpdate, onNext, onBack, isSubmitting = false }: StepCredentialsProps) => {
   const accountTypeLabel = data.accountType === "professional" ? "Professional" : "Handyman";
 
-  const isValid = data.email && data.password.length >= 8 && data.password === data.confirmPassword;
+  const passwordHasLetter = /[a-zA-Z]/.test(data.password);
+  const passwordHasNumber = /[0-9]/.test(data.password);
+  const passwordHasSpecial = /[^a-zA-Z0-9]/.test(data.password);
+  const passwordValid = data.password.length >= 8 && passwordHasLetter && passwordHasNumber && passwordHasSpecial;
+  const isValid = data.email && passwordValid && data.password === data.confirmPassword;
 
   return (
     <div className="space-y-6">
@@ -80,6 +84,23 @@ const StepCredentials = ({ data, onUpdate, onNext, onBack, isSubmitting = false 
           </div>
         </div>
 
+        {/* Password requirements */}
+        {data.password.length > 0 && (
+          <div className="space-y-1">
+            <p className={`text-xs flex items-center gap-1 ${data.password.length >= 8 ? "text-success" : "text-muted-foreground"}`}>
+              <span>{data.password.length >= 8 ? "✓" : "○"}</span> At least 8 characters
+            </p>
+            <p className={`text-xs flex items-center gap-1 ${passwordHasLetter ? "text-success" : "text-muted-foreground"}`}>
+              <span>{passwordHasLetter ? "✓" : "○"}</span> Contains letters
+            </p>
+            <p className={`text-xs flex items-center gap-1 ${passwordHasNumber ? "text-success" : "text-muted-foreground"}`}>
+              <span>{passwordHasNumber ? "✓" : "○"}</span> Contains numbers
+            </p>
+            <p className={`text-xs flex items-center gap-1 ${passwordHasSpecial ? "text-success" : "text-muted-foreground"}`}>
+              <span>{passwordHasSpecial ? "✓" : "○"}</span> Contains special characters (e.g. @, #, !)
+            </p>
+          </div>
+        )}
         {data.password && data.confirmPassword && data.password !== data.confirmPassword && (
           <p className="text-sm text-destructive">Passwords don't match</p>
         )}

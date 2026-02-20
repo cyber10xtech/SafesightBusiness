@@ -72,6 +72,11 @@ const Register = () => {
       return;
     }
 
+    if (!/[a-zA-Z]/.test(formData.password) || !/[0-9]/.test(formData.password) || !/[^a-zA-Z0-9]/.test(formData.password)) {
+      toast.error("Password must contain letters, numbers, and special characters");
+      return;
+    }
+
     setIsSubmitting(true);
     
     const { error, userId: newUserId } = await signUp(formData.email, formData.password, {
