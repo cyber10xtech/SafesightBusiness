@@ -1,6 +1,5 @@
 import { 
   Calendar, 
-  DollarSign, 
   Star, 
   Briefcase, 
   TrendingUp, 
@@ -8,7 +7,8 @@ import {
   Settings,
   Clock,
   Loader2,
-  MessageSquare
+  MessageSquare,
+  Banknote
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AppHeader from "@/components/layout/AppHeader";
@@ -108,7 +108,7 @@ const Dashboard = () => {
 
   const statsDisplay = [
     { icon: Calendar, label: "Total Bookings", value: stats.total.toString(), trend: "-", trendUp: true },
-    { icon: DollarSign, label: "This Month", value: formatCurrency(stats.thisMonthEarnings), trend: "-", trendUp: true },
+    { icon: Banknote, label: "This Month", value: formatCurrency(stats.thisMonthEarnings), trend: "-", trendUp: true },
     { icon: Star, label: "Avg Rating", value: proStats?.rating?.toFixed(1) ?? "-", trend: "-", trendUp: true },
     { icon: Briefcase, label: "Completed Jobs", value: stats.completed.toString(), trend: "-", trendUp: true },
   ];

@@ -1,4 +1,4 @@
-import { Phone, DollarSign } from "lucide-react";
+import { Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,32 +59,32 @@ const StepContactPricing = ({ data, onUpdate, onNext, onBack }: StepContactPrici
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="dailyRate">Daily Rate ($) *</Label>
+            <Label htmlFor="dailyRate">Daily Rate (₦) *</Label>
             <div className="relative">
-              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold text-sm">₦</span>
               <Input
                 id="dailyRate"
                 type="number"
-                placeholder="300"
+                placeholder="15000"
                 value={data.dailyRate}
                 onChange={(e) => onUpdate({ dailyRate: e.target.value })}
-                className="pl-11 h-12 rounded-xl"
+                className="pl-8 h-12 rounded-xl"
               />
             </div>
             <p className="text-xs text-muted-foreground">Rate per day</p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="contractRate">Contract Rate ($) *</Label>
+            <Label htmlFor="contractRate">Contract Rate (₦) *</Label>
             <div className="relative">
-              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold text-sm">₦</span>
               <Input
                 id="contractRate"
                 type="number"
-                placeholder="2000"
+                placeholder="50000"
                 value={data.contractRate}
                 onChange={(e) => onUpdate({ contractRate: e.target.value })}
-                className="pl-11 h-12 rounded-xl"
+                className="pl-8 h-12 rounded-xl"
               />
             </div>
             <p className="text-xs text-muted-foreground">Starting rate per project</p>
