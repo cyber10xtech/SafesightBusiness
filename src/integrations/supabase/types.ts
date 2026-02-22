@@ -544,6 +544,8 @@ export type Database = {
           documents_uploaded: boolean | null
           full_name: string | null
           id: string | null
+          is_verified: boolean | null
+          location: string | null
           profession: string | null
           skills: string[] | null
           updated_at: string | null
@@ -559,6 +561,8 @@ export type Database = {
           documents_uploaded?: boolean | null
           full_name?: string | null
           id?: string | null
+          is_verified?: boolean | null
+          location?: string | null
           profession?: string | null
           skills?: string[] | null
           updated_at?: string | null
@@ -574,6 +578,8 @@ export type Database = {
           documents_uploaded?: boolean | null
           full_name?: string | null
           id?: string | null
+          is_verified?: boolean | null
+          location?: string | null
           profession?: string | null
           skills?: string[] | null
           updated_at?: string | null
