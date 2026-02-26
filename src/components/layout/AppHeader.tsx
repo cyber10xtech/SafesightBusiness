@@ -18,10 +18,10 @@ const AppHeader = ({
   const navigate = useNavigate();
 
   return (
-    <header className="bg-card border-b border-border px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+    <header className="bg-card/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between sticky top-0 z-40">
       <div className="flex items-center gap-3">
         {showBack ? (
-          <button onClick={() => navigate(-1)} className="p-1">
+          <button onClick={() => navigate(-1)} className="p-1 tap-scale">
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>
         ) : (
@@ -32,11 +32,11 @@ const AppHeader = ({
       {showNotifications && (
         <button 
           onClick={() => navigate("/notifications")}
-          className="relative p-2"
+          className="relative p-2 tap-scale"
         >
-          <Bell className="w-5 h-5 text-muted-foreground" />
+          <Bell className="w-5 h-5 text-muted-foreground transition-transform hover:scale-110" />
           {notificationCount > 0 && (
-            <span className="absolute top-1 right-1 w-4 h-4 bg-success text-[10px] text-white rounded-full flex items-center justify-center">
+            <span className="absolute top-1 right-1 w-4 h-4 bg-destructive text-[10px] text-white rounded-full flex items-center justify-center animate-scale-in">
               {notificationCount > 9 ? "9+" : notificationCount}
             </span>
           )}
