@@ -1,13 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Briefcase, MapPin, Phone, Loader2 } from "lucide-react";
+import { User, Briefcase, MapPin, Phone, Loader2, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { PROFESSIONAL_PROFESSIONS, HANDYMAN_PROFESSIONS, labelToEnum } from "@/constants/professions";
+import type { ProfessionSpecialtyEnum, HandymanSpecialtyEnum } from "@/constants/professions";
 
 const CompleteProfile = () => {
   const navigate = useNavigate();
@@ -16,11 +19,13 @@ const CompleteProfile = () => {
   const [formData, setFormData] = useState({
     accountType: "handyman" as "professional" | "handyman",
     fullName: user?.user_metadata?.full_name || user?.user_metadata?.name || "",
-    profession: "",
+    profession: "", // display label — mapped to enum on submit
     bio: "",
     location: "",
     phoneNumber: "",
   });
+
+  const professions = formData.accountType === "professional" ? PROFESSIONAL_PROFESSIONS : HANDYMAN_PROFESSIONS;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,45 +35,97 @@ const CompleteProfile = () => {
       return;
     }
 
+    if (!formData.profession) {
+      toast.error("Please select your profession");
+      return;
+    }
+
     if (!user) {
       toast.error("Not authenticated");
       return;
     }
 
-    setLoading(true);
-
-    // Insert public profile
-    const { data: profileData, error } = await supabase.from("profiles").insert({
-      user_id: user.id,
-      account_type: formData.accountType,
-      full_name: formData.fullName,
-      profession: formData.profession || null,
-      bio: formData.bio || null,
-      location: formData.location || null,
-      skills: [],
-    }).select("id").single();
-
-    // Insert private contact info if phone number provided
-    if (!error && profileData && formData.phoneNumber) {
-      await supabase.from("profiles_private").insert({
-        profile_id: profileData.id,
-        phone_number: formData.phoneNumber || null,
-      });
-    }
-
-    setLoading(false);
-
-    if (error) {
-      // Check if profile already exists
-      if (error.code === "23505") {
-        navigate("/dashboard");
-        return;
-      }
-      toast.error(error.message || "Failed to create profile");
+    // Map display label → DB enum value
+    const specialtyEnum = labelToEnum(formData.profession, formData.accountType);
+    if (!specialtyEnum) {
+      toast.error(`"${formData.profession}" is not a recognised specialty.`);
       return;
     }
 
-    toast.success("Profile created!");
+    setLoading(true);
+
+    // The DB trigger (handle_new_user) already created a profiles row when the
+    // user signed up (if account_type was in metadata). Try UPDATE first.
+    // If the trigger didn't run (e.g. OAuth signup without metadata), INSERT.
+    const specialtyUpdate =
+      formData.accountType === "professional"
+        ? {
+            profession_specialty: specialtyEnum as ProfessionSpecialtyEnum,
+            handyman_specialty: null,
+          }
+        : {
+            handyman_specialty: specialtyEnum as HandymanSpecialtyEnum,
+            profession_specialty: null,
+          };
+
+    const profileFields = {
+      full_name: formData.fullName,
+      bio: formData.bio || null,
+      location: formData.location || null,
+      updated_at: new Date().toISOString(),
+      ...specialtyUpdate,
+    };
+
+    // Try to UPDATE the existing trigger-created row
+    const { data: updated, error: updateError } = await supabase
+      .from("profiles")
+      .update(profileFields)
+      .eq("user_id", user.id)
+      .select("id")
+      .maybeSingle();
+
+    let profileId: string | null = updated?.id ?? null;
+
+    // No existing row — INSERT one (handles OAuth / manual signups)
+    if (!profileId && !updateError) {
+      const { data: inserted, error: insertError } = await supabase
+        .from("profiles")
+        .insert({
+          user_id: user.id,
+          account_type: formData.accountType,
+          ...profileFields,
+          skills: [],
+        })
+        .select("id")
+        .single();
+
+      if (insertError) {
+        setLoading(false);
+        // Duplicate key — profile already exists, just go to dashboard
+        if (insertError.code === "23505") {
+          navigate("/dashboard");
+          return;
+        }
+        toast.error(insertError.message || "Failed to create profile");
+        return;
+      }
+
+      profileId = inserted?.id ?? null;
+    } else if (updateError) {
+      setLoading(false);
+      toast.error(updateError.message || "Failed to update profile");
+      return;
+    }
+
+    // Upsert private contact info
+    if (profileId && formData.phoneNumber) {
+      await supabase
+        .from("profiles_private")
+        .upsert({ profile_id: profileId, phone_number: formData.phoneNumber }, { onConflict: "profile_id" });
+    }
+
+    setLoading(false);
+    toast.success("Profile saved!");
     navigate("/dashboard");
   };
 
@@ -81,12 +138,9 @@ const CompleteProfile = () => {
             <User className="w-10 h-10 text-primary" />
           </div>
           <h1 className="text-2xl font-bold text-foreground">Complete Your Profile</h1>
-          <p className="text-muted-foreground mt-1 text-center">
-            Just a few more details to get started
-          </p>
+          <p className="text-muted-foreground mt-1 text-center">Just a few more details to get started</p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Account Type */}
           <div className="space-y-2">
@@ -94,33 +148,42 @@ const CompleteProfile = () => {
             <div className="grid grid-cols-2 gap-3">
               <button
                 type="button"
-                onClick={() => setFormData({ ...formData, accountType: "professional" })}
+                onClick={() => setFormData({ ...formData, accountType: "professional", profession: "" })}
                 className={`p-4 rounded-xl border-2 text-left transition-colors ${
                   formData.accountType === "professional"
                     ? "border-primary bg-primary/10"
                     : "border-border hover:border-primary/50"
                 }`}
               >
-                <Briefcase className={`w-6 h-6 mb-2 ${formData.accountType === "professional" ? "text-primary" : "text-muted-foreground"}`} />
+                <Briefcase
+                  className={`w-6 h-6 mb-2 ${
+                    formData.accountType === "professional" ? "text-primary" : "text-muted-foreground"
+                  }`}
+                />
                 <p className="font-medium text-foreground">Professional</p>
                 <p className="text-xs text-muted-foreground">Licensed expert</p>
               </button>
               <button
                 type="button"
-                onClick={() => setFormData({ ...formData, accountType: "handyman" })}
+                onClick={() => setFormData({ ...formData, accountType: "handyman", profession: "" })}
                 className={`p-4 rounded-xl border-2 text-left transition-colors ${
                   formData.accountType === "handyman"
                     ? "border-primary bg-primary/10"
                     : "border-border hover:border-primary/50"
                 }`}
               >
-                <User className={`w-6 h-6 mb-2 ${formData.accountType === "handyman" ? "text-primary" : "text-muted-foreground"}`} />
+                <Wrench
+                  className={`w-6 h-6 mb-2 ${
+                    formData.accountType === "handyman" ? "text-primary" : "text-muted-foreground"
+                  }`}
+                />
                 <p className="font-medium text-foreground">Handyman</p>
                 <p className="text-xs text-muted-foreground">Skilled worker</p>
               </button>
             </div>
           </div>
 
+          {/* Full Name */}
           <div className="space-y-2">
             <Label htmlFor="fullName">Full Name *</Label>
             <Input
@@ -133,18 +196,28 @@ const CompleteProfile = () => {
             />
           </div>
 
+          {/* Profession — dropdown mapped to enum */}
           <div className="space-y-2">
-            <Label htmlFor="profession">Profession</Label>
-            <Input
-              id="profession"
-              placeholder="e.g., Electrician, Plumber"
+            <Label htmlFor="profession">Profession *</Label>
+            <Select
               value={formData.profession}
-              onChange={(e) => setFormData({ ...formData, profession: e.target.value })}
-              className="h-12 rounded-xl"
+              onValueChange={(value) => setFormData({ ...formData, profession: value })}
               disabled={loading}
-            />
+            >
+              <SelectTrigger className="h-12 rounded-xl">
+                <SelectValue placeholder="Select your profession" />
+              </SelectTrigger>
+              <SelectContent>
+                {professions.map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {p}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
+          {/* Location */}
           <div className="space-y-2">
             <Label htmlFor="location">Location</Label>
             <div className="relative">
@@ -160,6 +233,7 @@ const CompleteProfile = () => {
             </div>
           </div>
 
+          {/* Phone */}
           <div className="space-y-2">
             <Label htmlFor="phone">Phone Number</Label>
             <div className="relative">
@@ -175,6 +249,7 @@ const CompleteProfile = () => {
             </div>
           </div>
 
+          {/* Bio */}
           <div className="space-y-2">
             <Label htmlFor="bio">About You</Label>
             <Textarea
@@ -187,15 +262,11 @@ const CompleteProfile = () => {
             />
           </div>
 
-          <Button 
-            type="submit" 
-            className="w-full h-12 rounded-xl text-lg font-semibold"
-            disabled={loading}
-          >
+          <Button type="submit" className="w-full h-12 rounded-xl text-lg font-semibold" disabled={loading}>
             {loading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                Creating Profile...
+                Saving Profile...
               </>
             ) : (
               "Complete Profile"
