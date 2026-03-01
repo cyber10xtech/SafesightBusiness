@@ -1,20 +1,29 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
+import type { ProfessionSpecialtyEnum, HandymanSpecialtyEnum } from "@/constants/professions";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, profileData: ProfileData) => Promise<{ error: Error | null; userId?: string }>;
+  signUp: (
+    email: string,
+    password: string,
+    profileData: ProfileData,
+  ) => Promise<{ error: Error | null; userId?: string }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
 
-interface ProfileData {
+export interface ProfileData {
   accountType: "professional" | "handyman";
   fullName: string;
-  profession?: string;
+  // ── Unified DB: specialty must be the enum value, not display label ──────────
+  // Exactly one of these is set depending on accountType; the other is omitted.
+  professionSpecialty?: ProfessionSpecialtyEnum; // professionals only
+  handymanSpecialty?: HandymanSpecialtyEnum; // handymen only
+  // ── Optional profile fields set in later steps ──────────────────────────────
   bio?: string;
   location?: string;
   phoneNumber?: string;
@@ -32,16 +41,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener BEFORE checking current session
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
 
-    // Check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -51,25 +58,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, profileData: ProfileData): Promise<{ error: Error | null; userId?: string }> => {
+  const signUp = async (
+    email: string,
+    password: string,
+    profileData: ProfileData,
+  ): Promise<{ error: Error | null; userId?: string }> => {
     try {
-      // Pass account_type and full_name in user metadata for the trigger
+      // ── Build metadata for the handle_new_user DB trigger ──────────────────
+      // The trigger routes by account_type and reads specialty from metadata.
+      // Both profession_specialty and handyman_specialty must be present (one
+      // will be null/absent, but the trigger only uses the relevant one).
+      const metadata: Record<string, string> = {
+        account_type: profileData.accountType,
+        full_name: profileData.fullName,
+      };
+
+      if (profileData.accountType === "professional" && profileData.professionSpecialty) {
+        metadata.profession_specialty = profileData.professionSpecialty;
+      } else if (profileData.accountType === "handyman" && profileData.handymanSpecialty) {
+        metadata.handyman_specialty = profileData.handymanSpecialty;
+      } else {
+        // Specialty not yet provided — cannot create profile without it.
+        throw new Error("Please select your profession before creating your account.");
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: window.location.origin,
-          data: {
-            account_type: profileData.accountType,
-            full_name: profileData.fullName,
-          },
+          data: metadata,
         },
       });
 
       if (error) throw error;
 
-      // Profile is created automatically by database trigger
-      // Return userId so registration steps can update the profile
       if (data.user) {
         return { error: null, userId: data.user.id };
       }
@@ -82,11 +105,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       return { error: null };
     } catch (error) {
@@ -99,9 +118,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>{children}</AuthContext.Provider>
   );
 };
 

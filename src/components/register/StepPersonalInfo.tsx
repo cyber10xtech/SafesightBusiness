@@ -1,4 +1,4 @@
-import { User, MapPin } from "lucide-react";
+import { User, MapPin, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,9 +12,10 @@ interface StepPersonalInfoProps {
   onUpdate: (data: Partial<RegistrationData>) => void;
   onNext: () => void;
   onBack: () => void;
+  isSubmitting?: boolean; // account is created when this step's Next is pressed
 }
 
-const StepPersonalInfo = ({ data, onUpdate, onNext, onBack }: StepPersonalInfoProps) => {
+const StepPersonalInfo = ({ data, onUpdate, onNext, onBack, isSubmitting = false }: StepPersonalInfoProps) => {
   const isValid = data.fullName && data.profession && data.bio && data.location;
   const professions = data.accountType === "professional" ? PROFESSIONAL_PROFESSIONS : HANDYMAN_PROFESSIONS;
 
@@ -40,6 +41,7 @@ const StepPersonalInfo = ({ data, onUpdate, onNext, onBack }: StepPersonalInfoPr
             value={data.fullName}
             onChange={(e) => onUpdate({ fullName: e.target.value })}
             className="h-12 rounded-xl"
+            disabled={isSubmitting}
           />
         </div>
 
@@ -48,6 +50,7 @@ const StepPersonalInfo = ({ data, onUpdate, onNext, onBack }: StepPersonalInfoPr
           <Select
             value={data.profession}
             onValueChange={(value) => onUpdate({ profession: value })}
+            disabled={isSubmitting}
           >
             <SelectTrigger className="h-12 rounded-xl">
               <SelectValue placeholder="Select your profession" />
@@ -70,6 +73,7 @@ const StepPersonalInfo = ({ data, onUpdate, onNext, onBack }: StepPersonalInfoPr
             value={data.bio}
             onChange={(e) => onUpdate({ bio: e.target.value })}
             className="min-h-[100px] rounded-xl resize-none"
+            disabled={isSubmitting}
           />
           <p className="text-xs text-muted-foreground">{data.bio.length} characters</p>
         </div>
@@ -85,22 +89,39 @@ const StepPersonalInfo = ({ data, onUpdate, onNext, onBack }: StepPersonalInfoPr
               value={data.location}
               onChange={(e) => onUpdate({ location: e.target.value })}
               className="pl-11 h-12 rounded-xl"
+              disabled={isSubmitting}
             />
           </div>
         </div>
       </div>
 
+      {/* Info notice */}
+      <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
+        <p className="text-sm text-foreground font-medium">Almost there!</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Pressing Continue will create your account. Make sure your profession is correct — it cannot be changed after
+          registration.
+        </p>
+      </div>
+
       {/* Buttons */}
       <div className="flex gap-3 pt-4 border-t border-border">
-        <Button variant="outline" onClick={onBack} className="flex-1 h-12 rounded-xl">
+        <Button variant="outline" onClick={onBack} className="flex-1 h-12 rounded-xl" disabled={isSubmitting}>
           Back
         </Button>
         <Button
           onClick={onNext}
-          disabled={!isValid}
+          disabled={!isValid || isSubmitting}
           className="flex-1 h-12 bg-primary text-primary-foreground rounded-xl"
         >
-          Continue
+          {isSubmitting ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin mr-2" />
+              Creating...
+            </>
+          ) : (
+            "Continue"
+          )}
         </Button>
       </div>
     </div>
