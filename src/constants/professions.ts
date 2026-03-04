@@ -1,131 +1,110 @@
-import { User, MapPin, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RegistrationData } from "@/pages/Register";
-import { PROFESSIONAL_PROFESSIONS, HANDYMAN_PROFESSIONS } from "@/constants/professions";
+// ── Professional Professions ──────────────────────────────────────────────────
+export const PROFESSIONAL_PROFESSIONS = [
+  "Architect",
+  "Project Manager",
+  "Builder",
+  "Interior Designer",
+  "Electrical Engineer",
+  "Structural Engineer",
+  "Mechanical Engineer",
+  "Quantity Surveyor",
+] as const;
 
-interface StepPersonalInfoProps {
-  data: RegistrationData;
-  onUpdate: (data: Partial<RegistrationData>) => void;
-  onNext: () => void;
-  onBack: () => void;
-  isSubmitting?: boolean; // account is created when this step's Next is pressed
-}
+// ── Handyman Professions ─────────────────────────────────────────────────────
+export const HANDYMAN_PROFESSIONS = [
+  "Wall painter",
+  "Plumber",
+  "Carpenter",
+  "Electrician",
+  "AC installer",
+  "Tiler",
+  "Welder",
+  "Bricklayer",
+  "Roof installer",
+  "Furniture repairs and maintenance",
+  "Industrial cleaner",
+  "Landscape expert",
+  "Fumigator",
+  "General laborer",
+] as const;
 
-const StepPersonalInfo = ({ data, onUpdate, onNext, onBack, isSubmitting = false }: StepPersonalInfoProps) => {
-  const isValid = data.fullName && data.profession && data.bio && data.location;
-  const professions = data.accountType === "professional" ? PROFESSIONAL_PROFESSIONS : HANDYMAN_PROFESSIONS;
+// ── Enum types (matching DB enum values) ─────────────────────────────────────
+export type ProfessionSpecialtyEnum =
+  | "architect"
+  | "project_manager"
+  | "builder"
+  | "interior_designer"
+  | "electrical_engineer"
+  | "structural_engineer"
+  | "mechanical_engineer"
+  | "quantity_surveyor";
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <User className="w-10 h-10 text-primary" />
-        </div>
-        <h2 className="text-2xl font-bold text-foreground">Personal Information</h2>
-        <p className="text-muted-foreground mt-1">Tell us about yourself</p>
-      </div>
+export type HandymanSpecialtyEnum =
+  | "wall_painter"
+  | "plumber"
+  | "carpenter"
+  | "electrician"
+  | "ac_installer"
+  | "tiler"
+  | "welder"
+  | "bricklayer"
+  | "roof_installer"
+  | "furniture_repairs_and_maintenance"
+  | "industrial_cleaner"
+  | "landscape_expert"
+  | "fumigator"
+  | "general_laborer";
 
-      {/* Form */}
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="fullName">Full Name *</Label>
-          <Input
-            id="fullName"
-            type="text"
-            placeholder="John Smith"
-            value={data.fullName}
-            onChange={(e) => onUpdate({ fullName: e.target.value })}
-            className="h-12 rounded-xl"
-            disabled={isSubmitting}
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="profession">Profession *</Label>
-          <Select
-            value={data.profession}
-            onValueChange={(value) => onUpdate({ profession: value })}
-            disabled={isSubmitting}
-          >
-            <SelectTrigger className="h-12 rounded-xl">
-              <SelectValue placeholder="Select your profession" />
-            </SelectTrigger>
-            <SelectContent>
-              {professions.map((profession) => (
-                <SelectItem key={profession} value={profession}>
-                  {profession}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="bio">Professional Bio *</Label>
-          <Textarea
-            id="bio"
-            placeholder="Tell customers about your experience, expertise, and what makes you stand out..."
-            value={data.bio}
-            onChange={(e) => onUpdate({ bio: e.target.value })}
-            className="min-h-[100px] rounded-xl resize-none"
-            disabled={isSubmitting}
-          />
-          <p className="text-xs text-muted-foreground">{data.bio.length} characters</p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="location">Location *</Label>
-          <div className="relative">
-            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              id="location"
-              type="text"
-              placeholder="City, State"
-              value={data.location}
-              onChange={(e) => onUpdate({ location: e.target.value })}
-              className="pl-11 h-12 rounded-xl"
-              disabled={isSubmitting}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Info notice */}
-      <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
-        <p className="text-sm text-foreground font-medium">Almost there!</p>
-        <p className="text-xs text-muted-foreground mt-1">
-          Pressing Continue will create your account. Make sure your profession is correct — it cannot be changed after
-          registration.
-        </p>
-      </div>
-
-      {/* Buttons */}
-      <div className="flex gap-3 pt-4 border-t border-border">
-        <Button variant="outline" onClick={onBack} className="flex-1 h-12 rounded-xl" disabled={isSubmitting}>
-          Back
-        </Button>
-        <Button
-          onClick={onNext}
-          disabled={!isValid || isSubmitting}
-          className="flex-1 h-12 bg-primary text-primary-foreground rounded-xl"
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin mr-2" />
-              Creating...
-            </>
-          ) : (
-            "Continue"
-          )}
-        </Button>
-      </div>
-    </div>
-  );
+// ── Label ↔ Enum mapping ─────────────────────────────────────────────────────
+const labelToEnumMap: Record<string, string> = {
+  // Professional
+  "Architect": "architect",
+  "Project Manager": "project_manager",
+  "Builder": "builder",
+  "Interior Designer": "interior_designer",
+  "Electrical Engineer": "electrical_engineer",
+  "Structural Engineer": "structural_engineer",
+  "Mechanical Engineer": "mechanical_engineer",
+  "Quantity Surveyor": "quantity_surveyor",
+  // Handyman
+  "Wall painter": "wall_painter",
+  "Plumber": "plumber",
+  "Carpenter": "carpenter",
+  "Electrician": "electrician",
+  "AC installer": "ac_installer",
+  "Tiler": "tiler",
+  "Welder": "welder",
+  "Bricklayer": "bricklayer",
+  "Roof installer": "roof_installer",
+  "Furniture repairs and maintenance": "furniture_repairs_and_maintenance",
+  "Industrial cleaner": "industrial_cleaner",
+  "Landscape expert": "landscape_expert",
+  "Fumigator": "fumigator",
+  "General laborer": "general_laborer",
 };
 
-export default StepPersonalInfo;
+const enumToLabelMap: Record<string, string> = Object.fromEntries(
+  Object.entries(labelToEnumMap).map(([label, enumVal]) => [enumVal, label]),
+);
+
+/**
+ * Convert a display label (e.g. "Wall painter") to the DB enum value (e.g. "wall_painter").
+ * Returns undefined if no match is found.
+ */
+export function labelToEnum(
+  label: string,
+  _accountType?: string,
+): ProfessionSpecialtyEnum | HandymanSpecialtyEnum | undefined {
+  return labelToEnumMap[label] as ProfessionSpecialtyEnum | HandymanSpecialtyEnum | undefined;
+}
+
+/**
+ * Convert a DB enum value (e.g. "wall_painter") back to a display label (e.g. "Wall painter").
+ * Returns the raw value if no mapping exists.
+ */
+export function enumToLabel(enumVal: string, _accountType?: string): string {
+  return enumToLabelMap[enumVal] ?? enumVal;
+}
+
+/** Combined list of all professions (for EditProfile backwards compat) */
+export const PROFESSIONS = [...PROFESSIONAL_PROFESSIONS, ...HANDYMAN_PROFESSIONS] as const;
