@@ -3,20 +3,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { enumToLabel } from "@/constants/professions";
 import type { Profile } from "./useProfile";
 
-// Escape special ILIKE pattern characters to prevent injection
 const escapeIlikePattern = (str: string): string => str.replace(/[%_\\]/g, "\\$&");
-
-// Limit search input length for performance
 const sanitizeSearchInput = (input: string, maxLength = 100): string =>
   escapeIlikePattern(input.trim().slice(0, maxLength));
 
-// Public profile type (without sensitive fields)
 export interface PublicProfile {
   id: string;
   user_id: string | null;
   account_type: "professional" | "handyman";
   full_name: string;
-  profession: string | null; // human-readable label (from compat view + enumToLabel)
+  profession: string | null;
   bio: string | null;
   location: string | null;
   skills: string[];
@@ -35,18 +31,15 @@ export const useProfessionals = () => {
   const [error, setError] = useState<Error | null>(null);
 
   const fetchProfessionals = async (filters?: {
-    profession?: string; // pass a display label OR enum value — both handled
+    profession?: string;
     location?: string;
     search?: string;
   }) => {
     try {
       setLoading(true);
 
-      // profiles_compat_view merges profession_specialty + handyman_specialty
-      // into a single `profession` text column (enum value string), which we
-      // can filter on and then convert to display labels below.
       let query = supabase
-        .from("profiles_compat_view")
+        .from("profiles_public")
         .select(
           "id, user_id, account_type, full_name, profession, bio, location, " +
             "skills, avatar_url, daily_rate, contract_rate, " +
@@ -55,8 +48,6 @@ export const useProfessionals = () => {
         .order("created_at", { ascending: false });
 
       if (filters?.profession) {
-        // The compat view `profession` column holds the enum string (e.g. "architect").
-        // If caller passed a display label (e.g. "Architect") we normalise it.
         const normalised = filters.profession.toLowerCase().replace(/\s+/g, "_");
         query = query.eq("profession", normalised);
       }
@@ -74,12 +65,9 @@ export const useProfessionals = () => {
       const { data, error } = await query;
       if (error) throw error;
 
-      // Convert enum strings → human-readable display labels
       const enriched: PublicProfile[] = (data ?? []).map((row: any) => ({
         ...row,
-        profession: row.profession
-          ? enumToLabel(row.profession, row.account_type as "professional" | "handyman")
-          : null,
+        profession: row.profession ? enumToLabel(row.profession) : null,
         skills: row.skills ?? [],
         documents_uploaded: row.documents_uploaded ?? false,
         is_verified: row.is_verified ?? false,
@@ -100,7 +88,7 @@ export const useProfessionals = () => {
   const getProfessionalById = async (id: string) => {
     try {
       const { data, error } = await supabase
-        .from("profiles_compat_view")
+        .from("profiles_public")
         .select(
           "id, user_id, account_type, full_name, profession, bio, location, " +
             "skills, avatar_url, daily_rate, contract_rate, " +
@@ -113,9 +101,7 @@ export const useProfessionals = () => {
 
       const enriched: PublicProfile = {
         ...(data as any),
-        profession: (data as any).profession
-          ? enumToLabel((data as any).profession, (data as any).account_type as "professional" | "handyman")
-          : null,
+        profession: (data as any).profession ? enumToLabel((data as any).profession) : null,
         skills: (data as any).skills ?? [],
         documents_uploaded: (data as any).documents_uploaded ?? false,
         is_verified: (data as any).is_verified ?? false,

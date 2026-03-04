@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PROFESSIONS } from "@/constants/professions";
+import { PROFESSIONAL_PROFESSIONS, HANDYMAN_PROFESSIONS } from "@/constants/professions";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
@@ -118,7 +118,7 @@ const EditProfile = () => {
                 <SelectValue placeholder="Select your profession" />
               </SelectTrigger>
               <SelectContent>
-                {PROFESSIONS.map((profession) => (
+                {(profile?.account_type === "professional" ? PROFESSIONAL_PROFESSIONS : HANDYMAN_PROFESSIONS).map((profession) => (
                   <SelectItem key={profession} value={profession}>
                     {profession}
                   </SelectItem>
