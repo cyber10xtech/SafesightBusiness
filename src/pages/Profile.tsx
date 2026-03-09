@@ -139,7 +139,7 @@ const Profile = () => {
         <div className="flex items-start gap-4">
           <div className="relative">
             <Avatar className="w-20 h-20 border-4 border-white/20">
-              <AvatarImage src={profile.avatar_url || undefined} />
+              <AvatarImage src={profile.avatar_url || undefined} className="object-cover" />
               <AvatarFallback className="bg-white text-primary text-xl font-bold">
                 {getInitials(profile.full_name)}
               </AvatarFallback>
