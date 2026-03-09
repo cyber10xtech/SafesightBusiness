@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RegistrationData } from "@/pages/Register";
+import logoBusiness from "@/assets/logo-business.jpg";
 
 interface StepCredentialsProps {
   data: RegistrationData;
