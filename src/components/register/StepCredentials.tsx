@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RegistrationData } from "@/pages/Register";
+import logoBusiness from "@/assets/logo-business.jpg";
 
 interface StepCredentialsProps {
   data: RegistrationData;
@@ -24,9 +25,9 @@ const StepCredentials = ({ data, onUpdate, onNext, onBack, isSubmitting = false 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="text-center">
-        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Mail className="w-10 h-10 text-primary" />
+      <div className="text-center animate-fade-in">
+        <div className="w-20 h-20 rounded-2xl overflow-hidden mx-auto mb-4 shadow-lg icon-float">
+          <img src={logoBusiness} alt="Safesight" className="w-full h-full object-cover" />
         </div>
         <h2 className="text-2xl font-bold text-foreground">Create Your Account</h2>
         <p className="text-muted-foreground mt-1">

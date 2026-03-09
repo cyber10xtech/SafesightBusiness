@@ -1,15 +1,18 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PROFESSIONAL_PROFESSIONS, HANDYMAN_PROFESSIONS } from "@/constants/professions";
+import { NIGERIAN_STATES } from "@/constants/nigerianStates";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
+
+const formatPhoneDigits = (value: string) => value.replace(/\D/g, "").slice(0, 10);
 
 const EditProfile = () => {
   const navigate = useNavigate();
@@ -28,7 +31,6 @@ const EditProfile = () => {
   });
   const [saving, setSaving] = useState(false);
 
-  // Update form data when profile loads
   useEffect(() => {
     if (profile) {
       setFormData({
@@ -44,11 +46,21 @@ const EditProfile = () => {
     }
   }, [profile]);
 
+  const phoneDigits = formData.phone_number.replace("+234", "").replace(/\D/g, "");
+  const whatsappDigits = formData.whatsapp_number.replace("+234", "").replace(/\D/g, "");
+
+  const handlePhoneChange = (value: string) => {
+    const digits = formatPhoneDigits(value);
+    setFormData(prev => ({ ...prev, phone_number: digits ? `+234${digits}` : "" }));
+  };
+
+  const handleWhatsappChange = (value: string) => {
+    const digits = formatPhoneDigits(value);
+    setFormData(prev => ({ ...prev, whatsapp_number: digits ? `+234${digits}` : "" }));
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -82,7 +94,6 @@ const EditProfile = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-2 -ml-2">
@@ -92,36 +103,23 @@ const EditProfile = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="p-4 space-y-6">
+      <form onSubmit={handleSubmit} className="p-4 space-y-6 animate-fade-in">
         {/* Personal Information */}
         <div className="space-y-4">
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Personal Information</h2>
           
           <div className="space-y-2">
             <Label htmlFor="full_name">Full Name</Label>
-            <Input
-              id="full_name"
-              name="full_name"
-              value={formData.full_name}
-              onChange={handleChange}
-              placeholder="Enter your full name"
-            />
+            <Input id="full_name" name="full_name" value={formData.full_name} onChange={handleChange} placeholder="Enter your full name" />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="profession">Profession</Label>
-            <Select
-              value={formData.profession}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, profession: value }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select your profession" />
-              </SelectTrigger>
+            <Select value={formData.profession} onValueChange={(value) => setFormData(prev => ({ ...prev, profession: value }))}>
+              <SelectTrigger><SelectValue placeholder="Select your profession" /></SelectTrigger>
               <SelectContent>
                 {(profile?.account_type === "professional" ? PROFESSIONAL_PROFESSIONS : HANDYMAN_PROFESSIONS).map((profession) => (
-                  <SelectItem key={profession} value={profession}>
-                    {profession}
-                  </SelectItem>
+                  <SelectItem key={profession} value={profession}>{profession}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -129,25 +127,24 @@ const EditProfile = () => {
 
           <div className="space-y-2">
             <Label htmlFor="bio">Bio</Label>
-            <Textarea
-              id="bio"
-              name="bio"
-              value={formData.bio}
-              onChange={handleChange}
-              placeholder="Tell clients about yourself..."
-              rows={4}
-            />
+            <Textarea id="bio" name="bio" value={formData.bio} onChange={handleChange} placeholder="Tell clients about yourself..." rows={4} />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="location">Location</Label>
-            <Input
-              id="location"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              placeholder="City, State"
-            />
+            <Label htmlFor="location">State</Label>
+            <Select value={formData.location} onValueChange={(value) => setFormData(prev => ({ ...prev, location: value }))}>
+              <SelectTrigger>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-muted-foreground" />
+                  <SelectValue placeholder="Select your state" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                {NIGERIAN_STATES.map((state) => (
+                  <SelectItem key={state} value={state}>{state}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -157,26 +154,34 @@ const EditProfile = () => {
           
           <div className="space-y-2">
             <Label htmlFor="phone_number">Phone Number</Label>
-            <Input
-              id="phone_number"
-              name="phone_number"
-              type="tel"
-              value={formData.phone_number}
-              onChange={handleChange}
-              placeholder="+1 234 567 8900"
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">+234</span>
+              <Input
+                id="phone_number"
+                type="tel"
+                value={phoneDigits}
+                onChange={(e) => handlePhoneChange(e.target.value)}
+                placeholder="8012345678"
+                className="pl-14"
+                maxLength={10}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="whatsapp_number">WhatsApp Number</Label>
-            <Input
-              id="whatsapp_number"
-              name="whatsapp_number"
-              type="tel"
-              value={formData.whatsapp_number}
-              onChange={handleChange}
-              placeholder="+1 234 567 8900"
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-success">+234</span>
+              <Input
+                id="whatsapp_number"
+                type="tel"
+                value={whatsappDigits}
+                onChange={(e) => handleWhatsappChange(e.target.value)}
+                placeholder="8012345678"
+                className="pl-14"
+                maxLength={10}
+              />
+            </div>
           </div>
         </div>
 
@@ -185,25 +190,19 @@ const EditProfile = () => {
           <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Pricing</h2>
           
           <div className="space-y-2">
-            <Label htmlFor="daily_rate">Daily Rate</Label>
-            <Input
-              id="daily_rate"
-              name="daily_rate"
-              value={formData.daily_rate}
-              onChange={handleChange}
-              placeholder="e.g. ₦15,000/day"
-            />
+            <Label htmlFor="daily_rate">Daily Rate (₦)</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold text-sm">₦</span>
+              <Input id="daily_rate" name="daily_rate" type="number" value={formData.daily_rate} onChange={handleChange} placeholder="15000" className="pl-8" />
+            </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="contract_rate">Contract Rate</Label>
-            <Input
-              id="contract_rate"
-              name="contract_rate"
-              value={formData.contract_rate}
-              onChange={handleChange}
-              placeholder="e.g. ₦5,000/hour"
-            />
+            <Label htmlFor="contract_rate">Contract Rate (₦)</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold text-sm">₦</span>
+              <Input id="contract_rate" name="contract_rate" type="number" value={formData.contract_rate} onChange={handleChange} placeholder="50000" className="pl-8" />
+            </div>
           </div>
         </div>
 

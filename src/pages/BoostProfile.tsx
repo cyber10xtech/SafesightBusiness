@@ -13,7 +13,7 @@ const BoostProfile = () => {
   const plans = [
     {
       name: "Basic Boost",
-      price: "$9.99",
+      price: "₦5,000",
       period: "/month",
       features: [
         "Priority listing in search results",
@@ -25,7 +25,7 @@ const BoostProfile = () => {
     },
     {
       name: "Pro Boost",
-      price: "$24.99",
+      price: "₦12,500",
       period: "/month",
       features: [
         "Everything in Basic",
@@ -39,7 +39,7 @@ const BoostProfile = () => {
     },
     {
       name: "Elite Boost",
-      price: "$49.99",
+      price: "₦25,000",
       period: "/month",
       features: [
         "Everything in Pro",
@@ -56,7 +56,6 @@ const BoostProfile = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <div className="sticky top-0 z-10 bg-background border-b border-border px-4 py-3">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="p-2 -ml-2">
@@ -68,9 +67,9 @@ const BoostProfile = () => {
 
       <div className="p-4 space-y-6">
         {/* Hero Section */}
-        <div className="text-center py-6">
+        <div className="text-center py-6 animate-fade-in">
           <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/60 rounded-full flex items-center justify-center mx-auto mb-4">
-            <TrendingUp className="w-8 h-8 text-primary-foreground" />
+            <TrendingUp className="w-8 h-8 text-primary-foreground icon-float" />
           </div>
           <h2 className="text-2xl font-bold mb-2">Get More Clients</h2>
           <p className="text-muted-foreground">
@@ -80,14 +79,13 @@ const BoostProfile = () => {
 
         {/* Plans */}
         <div className="space-y-4">
-          {plans.map((plan) => (
+          {plans.map((plan, index) => (
             <div
               key={plan.name}
-              className={`relative p-4 rounded-xl border ${
-                plan.popular
-                  ? "border-primary bg-primary/5"
-                  : "border-border"
+              className={`relative p-4 rounded-xl border animate-fade-in ${
+                plan.popular ? "border-primary bg-primary/5" : "border-border"
               }`}
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -101,9 +99,7 @@ const BoostProfile = () => {
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
                   plan.popular ? "bg-primary" : "bg-primary/10"
                 }`}>
-                  <plan.icon className={`w-6 h-6 ${
-                    plan.popular ? "text-primary-foreground" : "text-primary"
-                  }`} />
+                  <plan.icon className={`w-6 h-6 ${plan.popular ? "text-primary-foreground" : "text-primary"}`} />
                 </div>
                 
                 <div className="flex-1">
@@ -114,8 +110,8 @@ const BoostProfile = () => {
                   </div>
                   
                   <ul className="mt-4 space-y-2">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-center gap-2 text-sm">
+                    {plan.features.map((feature, i) => (
+                      <li key={i} className="flex items-center gap-2 text-sm">
                         <Check className="w-4 h-4 text-success" />
                         <span>{feature}</span>
                       </li>
@@ -136,7 +132,7 @@ const BoostProfile = () => {
         </div>
 
         {/* Benefits */}
-        <div className="bg-muted/50 rounded-xl p-4">
+        <div className="bg-muted/50 rounded-xl p-4 animate-fade-in" style={{ animationDelay: "0.3s" }}>
           <h3 className="font-semibold mb-3">Why Boost?</h3>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li>• Professionals with boosts get 3x more inquiries</li>
