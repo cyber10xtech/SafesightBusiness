@@ -9,6 +9,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { createNotification } from "@/hooks/useNotifications";
+import { useAuth } from "@/hooks/useAuth";
 
 type TabFilter = "all" | "pending" | "confirmed" | "completed";
 
@@ -35,6 +37,7 @@ interface Booking {
 
 const Bookings = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { profile } = useProfile();
   const [activeTab, setActiveTab] = useState<TabFilter>("all");
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -43,51 +46,34 @@ const Bookings = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       if (!profile?.id) return;
-
       try {
         const { data, error } = await supabase
-          .from("bookings")
-          .select("*")
+          .from("bookings").select("*")
           .eq("professional_id", profile.id)
           .order("scheduled_date", { ascending: false });
 
         if (error) throw error;
 
-        // Fetch customer info securely via RPC (only returns safe fields)
         const uniqueCustomerIds = [...new Set((data || []).map(b => b.customer_id))];
         const customerMap: Record<string, Customer> = {};
 
         await Promise.all(
           uniqueCustomerIds.map(async (customerId) => {
-            const { data: customerData } = await supabase.rpc("get_limited_customer_info", {
-              customer_profile_id: customerId,
-            });
-            if (customerData && customerData.length > 0) {
-              customerMap[customerId] = customerData[0];
-            }
+            const { data: customerData } = await supabase.rpc("get_limited_customer_info", { customer_profile_id: customerId });
+            if (customerData && customerData.length > 0) customerMap[customerId] = customerData[0];
           })
         );
 
-        const bookingsWithCustomers = (data || []).map(b => ({
-          ...b,
-          customer: customerMap[b.customer_id] || undefined,
-        }));
-
-        setBookings(bookingsWithCustomers);
+        setBookings((data || []).map(b => ({ ...b, customer: customerMap[b.customer_id] || undefined })));
       } catch (err) {
-        if (import.meta.env.DEV) {
-          console.error("Error fetching bookings:", err);
-        }
+        if (import.meta.env.DEV) console.error("Error fetching bookings:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    if (profile?.id) {
-      fetchBookings();
-    } else {
-      setLoading(false);
-    }
+    if (profile?.id) fetchBookings();
+    else setLoading(false);
   }, [profile?.id]);
 
   const updateStatus = async (bookingId: string, newStatus: string) => {
@@ -99,41 +85,41 @@ const Bookings = () => {
 
       if (error) throw error;
 
-      setBookings(prev => 
-        prev.map(b => b.id === bookingId ? { ...b, status: newStatus } : b)
-      );
+      const booking = bookings.find(b => b.id === bookingId);
+      setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status: newStatus } : b));
       toast.success(`Booking ${newStatus}`);
+
+      // Vibrate on action
+      if (navigator.vibrate) navigator.vibrate(100);
+
+      // Notify the professional (self) about booking status change
+      if (user?.id) {
+        const statusLabel = newStatus.charAt(0).toUpperCase() + newStatus.slice(1).replace("_", " ");
+        await createNotification(
+          user.id,
+          "professional",
+          "booking",
+          `Booking ${statusLabel}`,
+          `You ${newStatus === "confirmed" ? "accepted" : newStatus} a ${booking?.service_type || "service"} booking from ${booking?.customer?.full_name || "a customer"}.`,
+          { booking_id: bookingId }
+        );
+      }
     } catch (err) {
       toast.error("Failed to update booking");
     }
   };
 
-  const startConversation = async (customerId: string, customerName: string) => {
+  const startConversation = async (customerId: string) => {
     if (!profile?.id) return;
-
     try {
-      // Check if conversation already exists
       const { data: existing } = await supabase
-        .from("conversations")
-        .select("id")
-        .eq("professional_id", profile.id)
-        .eq("customer_id", customerId)
-        .single();
+        .from("conversations").select("id")
+        .eq("professional_id", profile.id).eq("customer_id", customerId).single();
 
-      if (existing) {
-        navigate(`/chat/${existing.id}`);
-        return;
-      }
+      if (existing) { navigate(`/chat/${existing.id}`); return; }
 
-      // Create new conversation
       const { data: newConv, error } = await supabase
-        .from("conversations")
-        .insert({
-          professional_id: profile.id,
-          customer_id: customerId,
-        })
-        .select("id")
-        .single();
+        .from("conversations").insert({ professional_id: profile.id, customer_id: customerId }).select("id").single();
 
       if (error) throw error;
       navigate(`/chat/${newConv.id}`);
@@ -142,10 +128,7 @@ const Bookings = () => {
     }
   };
 
-
-  const filteredBookings = activeTab === "all" 
-    ? bookings 
-    : bookings.filter((b) => b.status === activeTab);
+  const filteredBookings = activeTab === "all" ? bookings : bookings.filter((b) => b.status === activeTab);
 
   const tabs: { id: TabFilter; label: string; count: number }[] = [
     { id: "all", label: "All", count: bookings.length },
@@ -156,11 +139,8 @@ const Bookings = () => {
 
   const formatCurrency = (amount: number | null) => {
     if (!amount) return "-";
-    if (amount >= 1000000) {
-      return `₦${(amount / 1000000).toFixed(1)}M`;
-    } else if (amount >= 1000) {
-      return `₦${(amount / 1000).toFixed(0)}K`;
-    }
+    if (amount >= 1000000) return `₦${(amount / 1000000).toFixed(1)}M`;
+    if (amount >= 1000) return `₦${(amount / 1000).toFixed(0)}K`;
     return `₦${amount}`;
   };
 
@@ -178,82 +158,53 @@ const Bookings = () => {
     <div className="min-h-screen bg-background pb-20">
       <AppHeader title="Bookings" showBack />
 
-      {/* Tabs */}
       <div className="px-4 py-3 bg-card border-b border-border overflow-x-auto">
         <div className="flex gap-2">
           {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors",
-                activeTab === tab.id
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              )}
-            >
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={cn(
+              "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors",
+              activeTab === tab.id ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"
+            )}>
               {tab.label} ({tab.count})
             </button>
           ))}
         </div>
       </div>
 
-      {/* Bookings List */}
       <div className="p-4 space-y-4">
         {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
+          <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
         ) : filteredBookings.length === 0 ? (
           <div className="text-center py-12">
             <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground">
-              {activeTab === "all" ? "No bookings yet" : `No ${activeTab} bookings`}
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Booking requests from customers will appear here
-            </p>
+            <p className="text-muted-foreground">{activeTab === "all" ? "No bookings yet" : `No ${activeTab} bookings`}</p>
+            <p className="text-sm text-muted-foreground mt-1">Booking requests from customers will appear here</p>
           </div>
         ) : (
           filteredBookings.map((booking) => (
-            <div key={booking.id} className="bg-card rounded-xl border border-border p-4 space-y-3">
-              {/* Customer Info */}
+            <div key={booking.id} className="bg-card rounded-xl border border-border p-4 space-y-3 animate-fade-in">
               <div className="flex items-center gap-3 pb-3 border-b border-border">
                 <Avatar className="w-10 h-10">
-                  <AvatarImage src={booking.customer?.avatar_url || undefined} />
+                  <AvatarImage src={booking.customer?.avatar_url || undefined} className="object-cover" />
                   <AvatarFallback className="bg-primary/10 text-primary font-medium">
                     {booking.customer?.full_name?.split(" ").map(n => n[0]).join("") || <User className="w-4 h-4" />}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-foreground truncate">
-                    {booking.customer?.full_name || "Customer"}
-                  </h4>
+                  <h4 className="font-medium text-foreground truncate">{booking.customer?.full_name || "Customer"}</h4>
                   <p className="text-xs text-muted-foreground">Customer</p>
                 </div>
-                <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => startConversation(booking.customer_id, booking.customer?.full_name || "Customer")}
-                  >
-                    <MessageSquare className="w-4 h-4 text-muted-foreground" />
-                  </Button>
-                </div>
+                <Button variant="ghost" size="icon" className="h-8 w-8"
+                  onClick={() => startConversation(booking.customer_id)}>
+                  <MessageSquare className="w-4 h-4 text-muted-foreground" />
+                </Button>
               </div>
 
-              {/* Header */}
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="font-semibold text-foreground">{booking.service_type}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {new Date(booking.scheduled_date).toLocaleDateString("en-NG", {
-                      weekday: "short",
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric"
-                    })}
+                    {new Date(booking.scheduled_date).toLocaleDateString("en-NG", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
                     {booking.scheduled_time && ` at ${booking.scheduled_time}`}
                   </p>
                 </div>
@@ -262,73 +213,37 @@ const Bookings = () => {
                 </span>
               </div>
 
-              {/* Description */}
-              {booking.description && (
-                <p className="text-sm text-muted-foreground">{booking.description}</p>
-              )}
+              {booking.description && <p className="text-sm text-muted-foreground">{booking.description}</p>}
 
-              {/* Rate */}
               <div className="flex items-center justify-between">
-                <div>
-                  {booking.rate_type && (
-                    <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                      {booking.rate_type.charAt(0).toUpperCase() + booking.rate_type.slice(1)} Rate
-                    </span>
-                  )}
-                </div>
+                {booking.rate_type && (
+                  <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                    {booking.rate_type.charAt(0).toUpperCase() + booking.rate_type.slice(1)} Rate
+                  </span>
+                )}
                 <p className="text-lg font-bold text-foreground">{formatCurrency(booking.rate_amount)}</p>
               </div>
 
-              {/* Actions */}
               {booking.status === "pending" && (
                 <div className="flex gap-2 pt-2 border-t border-border">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 text-destructive border-destructive/30"
-                    onClick={() => updateStatus(booking.id, "cancelled")}
-                  >
-                    Decline
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => updateStatus(booking.id, "confirmed")}
-                  >
-                    Accept
-                  </Button>
+                  <Button variant="outline" size="sm" className="flex-1 text-destructive border-destructive/30"
+                    onClick={() => updateStatus(booking.id, "cancelled")}>Decline</Button>
+                  <Button size="sm" className="flex-1"
+                    onClick={() => updateStatus(booking.id, "confirmed")}>Accept</Button>
                 </div>
               )}
-
               {booking.status === "confirmed" && (
                 <div className="flex gap-2 pt-2 border-t border-border">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => updateStatus(booking.id, "in_progress")}
-                  >
-                    Start Job
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => updateStatus(booking.id, "completed")}
-                  >
-                    Mark Complete
-                  </Button>
+                  <Button variant="outline" size="sm" className="flex-1"
+                    onClick={() => updateStatus(booking.id, "in_progress")}>Start Job</Button>
+                  <Button size="sm" className="flex-1"
+                    onClick={() => updateStatus(booking.id, "completed")}>Mark Complete</Button>
                 </div>
               )}
-
               {booking.status === "in_progress" && (
                 <div className="pt-2 border-t border-border">
-                  <Button
-                    size="sm"
-                    className="w-full"
-                    onClick={() => updateStatus(booking.id, "completed")}
-                  >
-                    Mark as Completed
-                  </Button>
+                  <Button size="sm" className="w-full"
+                    onClick={() => updateStatus(booking.id, "completed")}>Mark as Completed</Button>
                 </div>
               )}
             </div>

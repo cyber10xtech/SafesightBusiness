@@ -11,15 +11,38 @@ interface StepContactPricingProps {
   onBack: () => void;
 }
 
+const formatPhoneDigits = (value: string) => {
+  // Strip everything except digits
+  const digits = value.replace(/\D/g, "").slice(0, 10);
+  return digits;
+};
+
 const StepContactPricing = ({ data, onUpdate, onNext, onBack }: StepContactPricingProps) => {
-  const isValid = data.phoneNumber && data.whatsappNumber && data.dailyRate && data.contractRate;
+  const phoneDigits = data.phoneNumber.replace("+234", "").replace(/\D/g, "");
+  const whatsappDigits = data.whatsappNumber.replace("+234", "").replace(/\D/g, "");
+
+  const isValid =
+    phoneDigits.length === 10 &&
+    whatsappDigits.length === 10 &&
+    data.dailyRate &&
+    data.contractRate;
+
+  const handlePhoneChange = (value: string) => {
+    const digits = formatPhoneDigits(value);
+    onUpdate({ phoneNumber: digits ? `+234${digits}` : "" });
+  };
+
+  const handleWhatsappChange = (value: string) => {
+    const digits = formatPhoneDigits(value);
+    onUpdate({ whatsappNumber: digits ? `+234${digits}` : "" });
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="text-center">
         <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Phone className="w-10 h-10 text-success" />
+          <Phone className="w-10 h-10 text-success icon-float" />
         </div>
         <h2 className="text-2xl font-bold text-foreground">Contact & Pricing</h2>
         <p className="text-muted-foreground mt-1">How should customers reach and pay you?</p>
@@ -30,31 +53,35 @@ const StepContactPricing = ({ data, onUpdate, onNext, onBack }: StepContactPrici
         <div className="space-y-2">
           <Label htmlFor="phoneNumber">Phone Number *</Label>
           <div className="relative">
-            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">+234</span>
             <Input
               id="phoneNumber"
               type="tel"
-              placeholder="+1 (555) 123-4567"
-              value={data.phoneNumber}
-              onChange={(e) => onUpdate({ phoneNumber: e.target.value })}
-              className="pl-11 h-12 rounded-xl"
+              placeholder="8012345678"
+              value={phoneDigits}
+              onChange={(e) => handlePhoneChange(e.target.value)}
+              className="pl-14 h-12 rounded-xl"
+              maxLength={10}
             />
           </div>
+          <p className="text-xs text-muted-foreground">{phoneDigits.length}/10 digits</p>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="whatsappNumber">WhatsApp Number *</Label>
           <div className="relative">
-            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-success" />
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-success">+234</span>
             <Input
               id="whatsappNumber"
               type="tel"
-              placeholder="+1 (555) 123-4567"
-              value={data.whatsappNumber}
-              onChange={(e) => onUpdate({ whatsappNumber: e.target.value })}
-              className="pl-11 h-12 rounded-xl"
+              placeholder="8012345678"
+              value={whatsappDigits}
+              onChange={(e) => handleWhatsappChange(e.target.value)}
+              className="pl-14 h-12 rounded-xl"
+              maxLength={10}
             />
           </div>
+          <p className="text-xs text-muted-foreground">{whatsappDigits.length}/10 digits</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">

@@ -11,6 +11,7 @@ import StepSkills from "@/components/register/StepSkills";
 import { supabase } from "@/integrations/supabase/client";
 import { labelToEnum } from "@/constants/professions";
 import type { ProfessionSpecialtyEnum, HandymanSpecialtyEnum } from "@/constants/professions";
+import logoBusiness from "@/assets/logo-business.jpg";
 
 export interface RegistrationData {
   accountType: "professional" | "handyman";
@@ -18,7 +19,7 @@ export interface RegistrationData {
   password: string;
   confirmPassword: string;
   fullName: string;
-  profession: string; // display label selected in UI
+  profession: string;
   bio: string;
   location: string;
   phoneNumber: string;
@@ -56,15 +57,12 @@ const Register = () => {
   });
 
   const totalSteps = 5;
-  const progress = (currentStep / totalSteps) * 100;
+  const progress = Math.min((currentStep / totalSteps) * 100, 100);
 
   const updateFormData = (data: Partial<RegistrationData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
   };
 
-  // ── Step 1: Credentials ────────────────────────────────────────────────────
-  // Just validate locally — account is NOT created yet (we need the profession
-  // from step 2 to pass the specialty to the DB trigger).
   const handleCredentialsNext = () => {
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords don't match");
@@ -85,17 +83,12 @@ const Register = () => {
     setCurrentStep(2);
   };
 
-  // ── Step 2: Personal Info → CREATE AUTH ACCOUNT ───────────────────────────
-  // We have the profession now. Map it to the enum value and create the account.
-  // The DB trigger (handle_new_user) will insert the profiles row using the
-  // specialty value from metadata.
   const handlePersonalInfoNext = async () => {
     if (!formData.fullName || !formData.profession || !formData.bio || !formData.location) {
       toast.error("Please fill in all required fields");
       return;
     }
 
-    // Map display label → DB enum value
     const specialtyEnum = labelToEnum(formData.profession, formData.accountType);
     if (!specialtyEnum) {
       toast.error(`"${formData.profession}" is not a recognised specialty. Please select from the list.`);
@@ -121,7 +114,6 @@ const Register = () => {
 
     if (newUserId) {
       setUserId(newUserId);
-      // Immediately update the extra fields the trigger doesn't set
       await updateProfile(newUserId);
     }
 
@@ -129,15 +121,11 @@ const Register = () => {
     toast.success("Account created! Complete your profile to continue.");
   };
 
-  // ── Update profile (steps 3-5) ─────────────────────────────────────────────
-  // Maps form fields to the correct unified DB columns.
-  // The specialty columns are never updated here — they were set at signup.
   const updateProfile = async (uid?: string) => {
     const targetUserId = uid ?? userId;
     if (!targetUserId) return;
 
     try {
-      // Fetch the profile row id first (needed for profiles_private upsert)
       const { data: profileRow, error: fetchError } = await supabase
         .from("profiles")
         .select("id")
@@ -146,7 +134,6 @@ const Register = () => {
 
       if (fetchError) throw fetchError;
 
-      // Update public profile fields (specialty NOT touched — set by trigger)
       const { error: profileError } = await supabase
         .from("profiles")
         .update({
@@ -163,7 +150,6 @@ const Register = () => {
 
       if (profileError) throw profileError;
 
-      // Upsert private contact info
       if (formData.phoneNumber || formData.whatsappNumber) {
         const { error: privateError } = await supabase.from("profiles_private").upsert(
           {
@@ -182,11 +168,10 @@ const Register = () => {
     }
   };
 
-  // ── Steps 3-5: just update profile then advance ────────────────────────────
   const handleNext = async () => {
     if (currentStep < totalSteps) {
       if (userId) await updateProfile();
-      setCurrentStep((prev) => prev + 1);
+      setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
     } else {
       setIsSubmitting(true);
       await updateProfile();
@@ -206,18 +191,12 @@ const Register = () => {
 
   const getStepTitle = () => {
     switch (currentStep) {
-      case 1:
-        return "Create Account";
-      case 2:
-        return "Personal Info";
-      case 3:
-        return "Contact & Pricing";
-      case 4:
-        return "Upload Documents";
-      case 5:
-        return "Your Skills";
-      default:
-        return "";
+      case 1: return "Create Account";
+      case 2: return "Personal Info";
+      case 3: return "Contact & Pricing";
+      case 4: return "Upload Documents";
+      case 5: return "Your Skills";
+      default: return "";
     }
   };
 
@@ -225,47 +204,18 @@ const Register = () => {
     switch (currentStep) {
       case 1:
         return (
-          <StepCredentials
-            data={formData}
-            onUpdate={updateFormData}
-            onNext={handleCredentialsNext}
-            onBack={handleBack}
-            isSubmitting={isSubmitting}
-          />
+          <StepCredentials data={formData} onUpdate={updateFormData} onNext={handleCredentialsNext} onBack={handleBack} isSubmitting={isSubmitting} />
         );
       case 2:
         return (
-          // onNext is now handlePersonalInfoNext — this is where the account is created
-          <StepPersonalInfo
-            data={formData}
-            onUpdate={updateFormData}
-            onNext={handlePersonalInfoNext}
-            onBack={handleBack}
-            isSubmitting={isSubmitting}
-          />
+          <StepPersonalInfo data={formData} onUpdate={updateFormData} onNext={handlePersonalInfoNext} onBack={handleBack} isSubmitting={isSubmitting} />
         );
       case 3:
         return <StepContactPricing data={formData} onUpdate={updateFormData} onNext={handleNext} onBack={handleBack} />;
       case 4:
-        return (
-          <StepDocuments
-            data={formData}
-            onUpdate={updateFormData}
-            onNext={handleNext}
-            onBack={handleBack}
-            userId={userId}
-          />
-        );
+        return <StepDocuments data={formData} onUpdate={updateFormData} onNext={handleNext} onBack={handleBack} userId={userId} />;
       case 5:
-        return (
-          <StepSkills
-            data={formData}
-            onUpdate={updateFormData}
-            onNext={handleNext}
-            onBack={handleBack}
-            isSubmitting={isSubmitting}
-          />
-        );
+        return <StepSkills data={formData} onUpdate={updateFormData} onNext={handleNext} onBack={handleBack} isSubmitting={isSubmitting} />;
       default:
         return null;
     }
@@ -273,9 +223,13 @@ const Register = () => {
 
   return (
     <div className="min-h-screen gradient-primary flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-card rounded-3xl shadow-xl overflow-hidden">
+      <div className="w-full max-w-md bg-card rounded-3xl shadow-xl overflow-hidden animate-scale-in">
         {/* Progress Header */}
         <div className="p-6 border-b border-border">
+          <div className="flex items-center gap-3 mb-4">
+            <img src={logoBusiness} alt="Safesight" className="w-8 h-8 rounded-lg object-cover" />
+            <span className="font-bold text-foreground">Safesight Business</span>
+          </div>
           <div className="flex justify-between items-center mb-3">
             <span className="text-sm font-medium text-foreground">
               Step {currentStep} of {totalSteps}: {getStepTitle()}

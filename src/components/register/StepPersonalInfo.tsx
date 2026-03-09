@@ -6,13 +6,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RegistrationData } from "@/pages/Register";
 import { PROFESSIONAL_PROFESSIONS, HANDYMAN_PROFESSIONS } from "@/constants/professions";
+import { NIGERIAN_STATES } from "@/constants/nigerianStates";
 
 interface StepPersonalInfoProps {
   data: RegistrationData;
   onUpdate: (data: Partial<RegistrationData>) => void;
   onNext: () => void;
   onBack: () => void;
-  isSubmitting?: boolean; // account is created when this step's Next is pressed
+  isSubmitting?: boolean;
 }
 
 const StepPersonalInfo = ({ data, onUpdate, onNext, onBack, isSubmitting = false }: StepPersonalInfoProps) => {
@@ -20,11 +21,11 @@ const StepPersonalInfo = ({ data, onUpdate, onNext, onBack, isSubmitting = false
   const professions = data.accountType === "professional" ? PROFESSIONAL_PROFESSIONS : HANDYMAN_PROFESSIONS;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="text-center">
         <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <User className="w-10 h-10 text-primary" />
+          <User className="w-10 h-10 text-primary icon-float" />
         </div>
         <h2 className="text-2xl font-bold text-foreground">Personal Information</h2>
         <p className="text-muted-foreground mt-1">Tell us about yourself</p>
@@ -79,19 +80,26 @@ const StepPersonalInfo = ({ data, onUpdate, onNext, onBack, isSubmitting = false
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="location">Location *</Label>
-          <div className="relative">
-            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              id="location"
-              type="text"
-              placeholder="City, State"
-              value={data.location}
-              onChange={(e) => onUpdate({ location: e.target.value })}
-              className="pl-11 h-12 rounded-xl"
-              disabled={isSubmitting}
-            />
-          </div>
+          <Label htmlFor="location">State *</Label>
+          <Select
+            value={data.location}
+            onValueChange={(value) => onUpdate({ location: value })}
+            disabled={isSubmitting}
+          >
+            <SelectTrigger className="h-12 rounded-xl">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-muted-foreground" />
+                <SelectValue placeholder="Select your state" />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              {NIGERIAN_STATES.map((state) => (
+                <SelectItem key={state} value={state}>
+                  {state}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

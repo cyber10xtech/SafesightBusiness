@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield, Mail, Lock, ArrowLeft, Loader2 } from "lucide-react";
+import { Mail, Lock, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import logoBusiness from "@/assets/logo-business.jpg";
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -43,18 +44,18 @@ const SignIn = () => {
 
   return (
     <div className="min-h-screen gradient-primary flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md bg-card rounded-3xl p-8 shadow-xl">
+      <div className="w-full max-w-md bg-card rounded-3xl p-8 shadow-xl animate-scale-in">
         {/* Header */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-            <Shield className="w-10 h-10 text-primary" />
+        <div className="flex flex-col items-center mb-8 animate-fade-in">
+          <div className="w-20 h-20 rounded-2xl flex items-center justify-center mb-4 shadow-lg overflow-hidden icon-float">
+            <img src={logoBusiness} alt="Safesight Business Logo" className="w-full h-full object-cover" />
           </div>
           <h1 className="text-3xl font-bold text-foreground">Welcome Back!</h1>
           <p className="text-muted-foreground mt-1">Sign in to Safesight Business</p>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSignIn} className="space-y-5">
+        <form onSubmit={handleSignIn} className="space-y-5 animate-fade-in" style={{ animationDelay: "0.15s" }}>
           <div className="space-y-2">
             <Label htmlFor="email">Email Address</Label>
             <div className="relative">
@@ -89,29 +90,15 @@ const SignIn = () => {
 
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Checkbox
-                id="remember"
-                checked={rememberMe}
-                onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-              />
-              <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
-                Remember me
-              </Label>
+              <Checkbox id="remember" checked={rememberMe} onCheckedChange={(checked) => setRememberMe(checked as boolean)} />
+              <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">Remember me</Label>
             </div>
-            <button 
-              type="button" 
-              onClick={() => navigate("/forgot-password")}
-              className="text-sm text-primary font-medium hover:underline"
-            >
+            <button type="button" onClick={() => navigate("/forgot-password")} className="text-sm text-primary font-medium hover:underline">
               Forgot password?
             </button>
           </div>
 
-          <Button 
-            type="submit" 
-            className="w-full h-12 bg-primary text-primary-foreground rounded-xl text-lg font-semibold"
-            disabled={loading}
-          >
+          <Button type="submit" className="w-full h-12 bg-primary text-primary-foreground rounded-xl text-lg font-semibold tap-scale" disabled={loading}>
             {loading ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin mr-2" />
@@ -124,13 +111,10 @@ const SignIn = () => {
         </form>
 
         {/* Footer */}
-        <div className="mt-6 text-center">
+        <div className="mt-6 text-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
           <p className="text-muted-foreground">
             Don't have an account?{" "}
-            <button
-              onClick={() => navigate("/account-type")}
-              className="text-primary font-semibold hover:underline"
-            >
+            <button onClick={() => navigate("/account-type")} className="text-primary font-semibold hover:underline">
               Sign up
             </button>
           </p>
@@ -138,7 +122,7 @@ const SignIn = () => {
 
         <button
           onClick={() => navigate("/")}
-          className="flex items-center justify-center gap-2 w-full mt-4 text-muted-foreground hover:text-foreground"
+          className="flex items-center justify-center gap-2 w-full mt-4 text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
