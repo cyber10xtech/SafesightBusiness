@@ -66,6 +66,44 @@ const Dashboard = () => {
     else setLoadingData(false);
   }, [profile?.id]);
 
+  // Realtime: subscribe to new bookings for this professional
+  useEffect(() => {
+    if (!profile?.id) return;
+
+    const channel = supabase
+      .channel('dashboard-bookings')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'bookings',
+          filter: `professional_id=eq.${profile.id}`,
+        },
+        (payload) => {
+          const newBooking = payload.new as any;
+          playNotificationSound();
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+          toast.success('New booking request received!');
+
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('New Booking Request! 📅', {
+              body: `A customer wants to book ${newBooking.service_type || 'your services'}`,
+              icon: '/pwa-192x192.png',
+            });
+          }
+
+          setStats(prev => ({ ...prev, total: prev.total + 1, pending: prev.pending + 1 }));
+          setRecentBookings(prev => [newBooking, ...prev].slice(0, 3));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [profile?.id]);
+
   const formatCurrency = (amount: number) => {
     if (amount >= 1000000) return `₦${(amount / 1000000).toFixed(1)}M`;
     if (amount >= 1000) return `₦${(amount / 1000).toFixed(0)}K`;
