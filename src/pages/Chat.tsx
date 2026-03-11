@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { playNotificationSound } from "@/utils/notificationSound";
+import { createNotification } from "@/hooks/useNotifications";
 
 interface Message {
   id: string;
@@ -105,10 +107,15 @@ const Chat = () => {
         (payload) => {
           const newMsg = payload.new as Message;
           setMessages(prev => {
-            // Avoid duplicates
             if (prev.some(m => m.id === newMsg.id)) return prev;
             return [...prev, newMsg];
           });
+
+          // Play sound + vibrate on incoming customer message
+          if (newMsg.sender_type === 'customer') {
+            playNotificationSound();
+            if (navigator.vibrate) navigator.vibrate(150);
+          }
 
           // Mark as read if from customer
           if (newMsg.sender_type === 'customer' && profile?.id) {
@@ -134,6 +141,7 @@ const Chat = () => {
   const handleSend = async () => {
     if (!newMessage.trim() || !profile?.id || !conversationId) return;
 
+    const messageText = newMessage.trim();
     setSending(true);
     try {
       const { error } = await supabase
@@ -142,7 +150,7 @@ const Chat = () => {
           conversation_id: conversationId,
           sender_id: profile.id,
           sender_type: "professional",
-          content: newMessage.trim(),
+          content: messageText,
         });
 
       if (error) throw error;
@@ -154,6 +162,31 @@ const Chat = () => {
         .eq("id", conversationId);
 
       setNewMessage("");
+
+      // Notify the customer about the new message
+      if (customer?.id) {
+        try {
+          const { data: cp } = await supabase
+            .from('customer_profiles')
+            .select('user_id')
+            .eq('id', customer.id)
+            .single();
+
+          if (cp?.user_id) {
+            const preview = messageText.substring(0, 80) + (messageText.length > 80 ? '...' : '');
+            await createNotification(
+              cp.user_id,
+              'customer',
+              'message',
+              `New message from ${profile.full_name}`,
+              preview,
+              { conversation_id: conversationId }
+            );
+          }
+        } catch (notifErr) {
+          if (import.meta.env.DEV) console.error('Failed to notify customer:', notifErr);
+        }
+      }
     } catch (err) {
       if (import.meta.env.DEV) {
         console.error("Error sending message:", err);

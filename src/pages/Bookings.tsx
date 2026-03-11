@@ -92,17 +92,35 @@ const Bookings = () => {
       // Vibrate on action
       if (navigator.vibrate) navigator.vibrate(100);
 
-      // Notify the professional (self) about booking status change
-      if (user?.id) {
-        const statusLabel = newStatus.charAt(0).toUpperCase() + newStatus.slice(1).replace("_", " ");
-        await createNotification(
-          user.id,
-          "professional",
-          "booking",
-          `Booking ${statusLabel}`,
-          `You ${newStatus === "confirmed" ? "accepted" : newStatus} a ${booking?.service_type || "service"} booking from ${booking?.customer?.full_name || "a customer"}.`,
-          { booking_id: bookingId }
-        );
+      // Notify the CUSTOMER about booking status change
+      if (booking?.customer_id) {
+        try {
+          const { data: cpData } = await supabase
+            .from('customer_profiles')
+            .select('user_id')
+            .eq('id', booking.customer_id)
+            .single();
+
+          const customerAuthUserId = cpData?.user_id;
+          if (customerAuthUserId) {
+            const title = newStatus === 'confirmed' ? 'Booking Accepted! ✅'
+              : newStatus === 'completed' ? 'Job Completed ✅'
+              : newStatus === 'cancelled' ? 'Booking Declined'
+              : 'Booking Update';
+            const message = `Your ${booking.service_type} booking on ${booking.scheduled_date} has been ${newStatus} by ${profile?.full_name || 'your professional'}.`;
+
+            await createNotification(
+              customerAuthUserId,
+              'customer',
+              'booking',
+              title,
+              message,
+              { booking_id: bookingId }
+            );
+          }
+        } catch (notifErr) {
+          if (import.meta.env.DEV) console.error('Failed to notify customer:', notifErr);
+        }
       }
     } catch (err) {
       toast.error("Failed to update booking");
