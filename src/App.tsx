@@ -29,6 +29,11 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// Request notification permission on startup
+if ('Notification' in window && Notification.permission === 'default') {
+  Notification.requestPermission();
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
