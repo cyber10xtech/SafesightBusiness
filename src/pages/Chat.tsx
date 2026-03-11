@@ -107,10 +107,15 @@ const Chat = () => {
         (payload) => {
           const newMsg = payload.new as Message;
           setMessages(prev => {
-            // Avoid duplicates
             if (prev.some(m => m.id === newMsg.id)) return prev;
             return [...prev, newMsg];
           });
+
+          // Play sound + vibrate on incoming customer message
+          if (newMsg.sender_type === 'customer') {
+            playNotificationSound();
+            if (navigator.vibrate) navigator.vibrate(150);
+          }
 
           // Mark as read if from customer
           if (newMsg.sender_type === 'customer' && profile?.id) {
