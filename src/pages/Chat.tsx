@@ -141,6 +141,7 @@ const Chat = () => {
   const handleSend = async () => {
     if (!newMessage.trim() || !profile?.id || !conversationId) return;
 
+    const messageText = newMessage.trim();
     setSending(true);
     try {
       const { error } = await supabase
@@ -149,7 +150,7 @@ const Chat = () => {
           conversation_id: conversationId,
           sender_id: profile.id,
           sender_type: "professional",
-          content: newMessage.trim(),
+          content: messageText,
         });
 
       if (error) throw error;
@@ -161,6 +162,31 @@ const Chat = () => {
         .eq("id", conversationId);
 
       setNewMessage("");
+
+      // Notify the customer about the new message
+      if (customer?.id) {
+        try {
+          const { data: cp } = await supabase
+            .from('customer_profiles')
+            .select('user_id')
+            .eq('id', customer.id)
+            .single();
+
+          if (cp?.user_id) {
+            const preview = messageText.substring(0, 80) + (messageText.length > 80 ? '...' : '');
+            await createNotification(
+              cp.user_id,
+              'customer',
+              'message',
+              `New message from ${profile.full_name}`,
+              preview,
+              { conversation_id: conversationId }
+            );
+          }
+        } catch (notifErr) {
+          if (import.meta.env.DEV) console.error('Failed to notify customer:', notifErr);
+        }
+      }
     } catch (err) {
       if (import.meta.env.DEV) {
         console.error("Error sending message:", err);
