@@ -9,8 +9,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { useProStats } from "@/hooks/useProStats";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { playNotificationSound } from "@/utils/notificationSound";
+import { toast } from "sonner";
 
 interface BookingStats {
   total: number;
