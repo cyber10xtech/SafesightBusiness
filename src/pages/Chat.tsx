@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
+import { playNotificationSound } from "@/utils/notificationSound";
+import { createNotification } from "@/hooks/useNotifications";
 
 interface Message {
   id: string;
