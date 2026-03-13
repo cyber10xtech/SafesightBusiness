@@ -134,10 +134,16 @@ const Register = () => {
 
       if (fetchError) throw fetchError;
 
+      // Convert profession label to enum for DB storage
+      const professionEnum = formData.profession
+        ? labelToEnum(formData.profession, formData.accountType)
+        : null;
+
       const { error: profileError } = await supabase
         .from("profiles")
         .update({
           full_name: formData.fullName || undefined,
+          profession: professionEnum || null,
           bio: formData.bio || null,
           location: formData.location || null,
           daily_rate: formData.dailyRate || null,
