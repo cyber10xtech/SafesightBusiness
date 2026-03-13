@@ -67,7 +67,14 @@ const EditProfile = () => {
     e.preventDefault();
     setSaving(true);
     
-    const { error } = await updateProfile(formData);
+    // Convert profession display label to enum for DB storage
+    const { labelToEnum } = await import("@/constants/professions");
+    const professionEnum = formData.profession ? labelToEnum(formData.profession, profile?.account_type) : null;
+    
+    const { error } = await updateProfile({
+      ...formData,
+      profession: professionEnum || formData.profession,
+    });
     
     if (error) {
       toast.error("Failed to update profile");
