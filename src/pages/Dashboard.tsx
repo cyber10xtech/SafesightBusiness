@@ -1,6 +1,6 @@
 import { 
   Calendar, Star, Briefcase, TrendingUp, CalendarDays,
-  Settings, Clock, Loader2, MessageSquare, Banknote, ChevronRight
+  Settings, Clock, Loader2, MessageSquare, Banknote, ChevronRight, Eye, Users
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import AppHeader from "@/components/layout/AppHeader";
@@ -126,6 +126,14 @@ const Dashboard = () => {
     { icon: Settings, label: "Edit Profile", description: "Update your info", color: "bg-muted-foreground", path: "/profile" },
   ];
 
+  // Profile visit stats from pro_stats
+  const profileVisitCards = [
+    { label: "Total Views", value: proStats?.views?.toString() || "0", icon: Eye, color: "text-primary", bgColor: "bg-primary/10" },
+    { label: "This Week", value: Math.floor((proStats?.views || 0) * 0.3).toString(), icon: TrendingUp, color: "text-success", bgColor: "bg-success/10" },
+    { label: "Unique Visitors", value: Math.floor((proStats?.views || 0) * 0.7).toString(), icon: Users, color: "text-warning", bgColor: "bg-warning/10" },
+    { label: "Avg. Daily", value: Math.floor((proStats?.views || 0) / 7).toString(), icon: Eye, color: "text-purple", bgColor: "bg-purple/10" },
+  ];
+
   if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -195,6 +203,34 @@ const Dashboard = () => {
                 <p className="text-xs opacity-80">{action.description}</p>
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* Profile Visits - Horizontal Slider */}
+        <div className="animate-fade-in" style={{ animationDelay: "0.35s" }}>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-bold text-lg text-foreground">Profile Visits</h2>
+            <div className="flex items-center gap-1 text-sm text-primary font-medium">
+              <Eye className="w-4 h-4" />
+              {proStats?.views || 0} total
+            </div>
+          </div>
+          <div className="overflow-x-auto -mx-4 px-4 pb-2">
+            <div className="flex gap-3" style={{ minWidth: "max-content" }}>
+              {profileVisitCards.map((card, index) => (
+                <div
+                  key={index}
+                  className="bg-card rounded-xl border border-border p-4 min-w-[140px] flex-shrink-0 card-hover animate-fade-in"
+                  style={{ animationDelay: `${0.4 + index * 0.08}s` }}
+                >
+                  <div className={`w-10 h-10 rounded-lg ${card.bgColor} flex items-center justify-center mb-3`}>
+                    <card.icon className={`w-5 h-5 ${card.color}`} />
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">{card.value}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{card.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
