@@ -111,6 +111,7 @@ const Profile = () => {
 
   const menuItems = [
     { icon: Edit3, label: "Edit Profile", description: "Update your information", path: "/edit-profile" },
+    { icon: Camera, label: "My Gallery", description: "Showcase your work", path: "/gallery" },
     { icon: Shield, label: "Verification", description: "Manage your credentials", badge: profile.documents_uploaded ? "Verified" : undefined, path: "/verification" },
     { icon: Award, label: "Certifications", description: "Add professional certificates", path: "/certifications" },
     { icon: Zap, label: "Boost Profile", description: "Get more visibility", badge: "Pro", path: "/boost-profile" },

@@ -217,6 +217,7 @@ const CompleteProfile = () => {
                 disabled={loading}
               />
             </div>
+            <p className="text-xs text-muted-foreground">{phoneDigits.length} / 10 digits</p>
           </div>
 
           {/* Bio */}
@@ -225,7 +226,7 @@ const CompleteProfile = () => {
             <Textarea id="bio" placeholder="Tell clients about your experience..." value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })} className="rounded-xl min-h-[100px]" disabled={loading} />
           </div>
 
-          <Button type="submit" className="w-full h-12 rounded-xl text-lg font-semibold" disabled={loading}>
+          <Button type="submit" className="w-full h-12 rounded-xl text-lg font-semibold" disabled={loading || (phoneDigits.length > 0 && phoneDigits.length !== 10)}>
             {loading ? (<><Loader2 className="w-5 h-5 animate-spin mr-2" />Saving Profile...</>) : "Complete Profile"}
           </Button>
         </form>

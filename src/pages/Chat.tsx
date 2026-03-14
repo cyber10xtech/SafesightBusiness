@@ -239,10 +239,10 @@ const Chat = () => {
           </svg>
         </button>
         
-        <div className="flex items-center gap-3 flex-1">
+        <div className="flex items-center gap-3 flex-1 cursor-pointer" onClick={() => customer?.id && navigate(`/customer/${customer.id}`)}>
           <div className="relative">
             <Avatar className="w-10 h-10">
-              <AvatarImage src={customer?.avatar_url || undefined} />
+              <AvatarImage src={customer?.avatar_url || undefined} className="object-cover" />
               <AvatarFallback className="bg-primary/10 text-primary font-medium">
                 {customer?.full_name?.split(" ").map(n => n[0]).join("") || "?"}
               </AvatarFallback>
@@ -251,7 +251,7 @@ const Chat = () => {
           </div>
           <div>
             <h1 className="font-semibold text-foreground">{customer?.full_name || "Customer"}</h1>
-            <p className="text-xs text-success">Customer</p>
+            <p className="text-xs text-primary">Tap to view profile</p>
           </div>
         </div>
 
