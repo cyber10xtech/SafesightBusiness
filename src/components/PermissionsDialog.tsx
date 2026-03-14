@@ -2,26 +2,36 @@ import { useState, useEffect } from "react";
 import { Bell, MapPin, Camera, Shield, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useAuth } from "@/hooks/useAuth";
 
 const PermissionsDialog = () => {
   const { status, requestAllPermissions } = usePermissions();
+  const { user } = useAuth();
   const [show, setShow] = useState(false);
   const [requesting, setRequesting] = useState(false);
 
   useEffect(() => {
-    if (!status.allRequested) {
-      const timer = setTimeout(() => setShow(true), 1000);
+    if (!user) return;
+    const key = `permissions_asked_${user.id}`;
+    const asked = localStorage.getItem(key);
+    if (!asked) {
+      const timer = setTimeout(() => setShow(true), 1500);
       return () => clearTimeout(timer);
     }
-  }, [status.allRequested]);
+  }, [user]);
 
-  if (!show || status.allRequested) return null;
+  if (!show || !user) return null;
+
+  const dismiss = () => {
+    localStorage.setItem(`permissions_asked_${user.id}`, "true");
+    setShow(false);
+  };
 
   const handleAllow = async () => {
     setRequesting(true);
     await requestAllPermissions();
     setRequesting(false);
-    setShow(false);
+    dismiss();
   };
 
   const permissions = [
@@ -70,10 +80,7 @@ const PermissionsDialog = () => {
         </Button>
 
         <button
-          onClick={() => {
-            localStorage.setItem("safesight_permissions_requested", "true");
-            setShow(false);
-          }}
+          onClick={dismiss}
           className="w-full mt-3 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           Skip for now

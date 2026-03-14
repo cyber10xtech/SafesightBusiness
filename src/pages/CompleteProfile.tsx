@@ -217,6 +217,7 @@ const CompleteProfile = () => {
                 disabled={loading}
               />
             </div>
+            <p className="text-xs text-muted-foreground">{phoneDigits.length} / 10 digits</p>
           </div>
 
           {/* Bio */}

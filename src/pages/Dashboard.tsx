@@ -161,7 +161,9 @@ const Dashboard = () => {
         {/* Welcome */}
         <div className="animate-fade-in">
           <h1 className="text-2xl font-bold text-foreground">Welcome back, {firstName}! 👋</h1>
-          <p className="text-muted-foreground">Here's what's happening with your business today</p>
+          <p className="text-muted-foreground">
+            {profile?.location ? `${profile.location} • ` : ''}{profile?.account_type === 'professional' ? 'Professional' : 'Handyman'} — Here's your business today
+          </p>
         </div>
 
         {/* Stats Grid */}
