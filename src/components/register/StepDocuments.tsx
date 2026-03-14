@@ -19,8 +19,6 @@ interface UploadedFile {
   size: number;
 }
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-
 const StepDocuments = ({ data, onUpdate, onNext, onBack, userId }: StepDocumentsProps) => {
   const [uploading, setUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
@@ -43,7 +41,7 @@ const StepDocuments = ({ data, onUpdate, onNext, onBack, userId }: StepDocuments
 
       for (const file of Array.from(files)) {
         // Validate file type
-        const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
+        const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
         if (!allowedTypes.includes(file.type)) {
           setError("Only PDF, JPG, and PNG files are allowed");
           continue;
@@ -55,45 +53,27 @@ const StepDocuments = ({ data, onUpdate, onNext, onBack, userId }: StepDocuments
           continue;
         }
 
-        // Create FormData for the edge function
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('fileName', file.name);
+        // Upload directly to Supabase storage
+        const filePath = `${userId}/${file.name}`;
+        const { data, error: uploadError } = await supabase.storage
+          .from("documents") // your bucket name
+          .upload(filePath, file, { upsert: true });
 
-        // Get JWT token for authentication
-        const { data: sessionData } = await supabase.auth.getSession();
-        const token = sessionData?.session?.access_token;
-        if (!token) {
-          setError("Authentication required. Please try again.");
-          continue;
-        }
-
-        // Upload via edge function with JWT authentication
-        const response = await fetch(`${SUPABASE_URL}/functions/v1/upload-document`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-          body: formData,
-        });
-
-        const result = await response.json();
-
-        if (!response.ok || result.error) {
-          console.error("Upload error:", result.error);
-          setError(result.error || "Failed to upload file. Please try again.");
+        if (uploadError) {
+          console.error("Upload error:", uploadError);
+          setError(uploadError.message || "Failed to upload file.");
           continue;
         }
 
         newFiles.push({
-          name: result.name,
-          path: result.path,
-          size: result.size,
+          name: file.name,
+          path: filePath,
+          size: file.size,
         });
       }
 
       if (newFiles.length > 0) {
-        setUploadedFiles(prev => [...prev, ...newFiles]);
+        setUploadedFiles((prev) => [...prev, ...newFiles]);
         onUpdate({ documentsUploaded: true });
       }
     } catch (err) {
@@ -108,25 +88,17 @@ const StepDocuments = ({ data, onUpdate, onNext, onBack, userId }: StepDocuments
     if (!userId) return;
 
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-      if (!token) return;
+      const { error: deleteError } = await supabase.storage.from("documents").remove([filePath]);
 
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/delete-document`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ filePath }),
-      });
+      if (deleteError) {
+        console.error("Delete error:", deleteError);
+        return;
+      }
 
-      if (response.ok) {
-        setUploadedFiles(prev => prev.filter(f => f.path !== filePath));
-        
-        if (uploadedFiles.length <= 1) {
-          onUpdate({ documentsUploaded: false });
-        }
+      setUploadedFiles((prev) => prev.filter((f) => f.path !== filePath));
+
+      if (uploadedFiles.length <= 1) {
+        onUpdate({ documentsUploaded: false });
       }
     } catch (err) {
       console.error("Delete error:", err);
@@ -134,9 +106,9 @@ const StepDocuments = ({ data, onUpdate, onNext, onBack, userId }: StepDocuments
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
   };
 
   const isValid = uploadedFiles.length > 0;
@@ -198,16 +170,11 @@ const StepDocuments = ({ data, onUpdate, onNext, onBack, userId }: StepDocuments
           <div className="space-y-2">
             <Label>Uploaded Files</Label>
             {uploadedFiles.map((file) => (
-              <div
-                key={file.path}
-                className="flex items-center justify-between bg-muted/50 rounded-lg p-3"
-              >
+              <div key={file.path} className="flex items-center justify-between bg-muted/50 rounded-lg p-3">
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-success" />
                   <div>
-                    <p className="text-sm font-medium text-foreground truncate max-w-[180px]">
-                      {file.name}
-                    </p>
+                    <p className="text-sm font-medium text-foreground truncate max-w-[180px]">{file.name}</p>
                     <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
                   </div>
                 </div>
@@ -226,20 +193,15 @@ const StepDocuments = ({ data, onUpdate, onNext, onBack, userId }: StepDocuments
         <div className="bg-primary/5 border border-primary/20 rounded-xl p-4">
           <p className="text-sm text-foreground font-medium mb-1">Why upload documents?</p>
           <p className="text-xs text-muted-foreground">
-            Verified professionals receive a trust badge, appear higher in search results, 
-            and build more customer confidence.
+            Verified professionals receive a trust badge, appear higher in search results, and build more customer
+            confidence.
           </p>
         </div>
       </div>
 
       {/* Buttons */}
       <div className="flex gap-3 pt-4 border-t border-border">
-        <Button 
-          variant="outline" 
-          onClick={onBack} 
-          className="flex-1 h-12 rounded-xl"
-          disabled={uploading}
-        >
+        <Button variant="outline" onClick={onBack} className="flex-1 h-12 rounded-xl" disabled={uploading}>
           Back
         </Button>
         <Button
