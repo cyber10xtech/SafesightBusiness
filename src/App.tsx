@@ -67,6 +67,8 @@ const App = () => (
             <Route path="/messages" element={<Messages />} />
             <Route path="/chat/:id" element={<Chat />} />
             <Route path="/job-history" element={<JobHistory />} />
+            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/customer/:id" element={<CustomerProfile />} />
             <Route path="/install" element={<Install />} />
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
