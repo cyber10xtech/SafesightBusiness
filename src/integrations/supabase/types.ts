@@ -224,6 +224,48 @@ export type Database = {
           },
         ]
       }
+      gallery: {
+        Row: {
+          caption: string | null
+          created_at: string
+          display_order: number | null
+          id: string
+          image_url: string
+          profile_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url: string
+          profile_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gallery_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gallery_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
