@@ -25,6 +25,8 @@ import Messages from "./pages/Messages";
 import Chat from "./pages/Chat";
 import JobHistory from "./pages/JobHistory";
 import Install from "./pages/Install";
+import Gallery from "./pages/Gallery";
+import CustomerProfile from "./pages/CustomerProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
