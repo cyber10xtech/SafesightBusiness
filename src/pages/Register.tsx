@@ -28,6 +28,7 @@ export interface RegistrationData {
   contractRate: string;
   skills: string[];
   documentsUploaded: boolean;
+  selectedFiles: File[]; // <-- new
 }
 
 const Register = () => {
@@ -54,6 +55,7 @@ const Register = () => {
     contractRate: "",
     skills: [],
     documentsUploaded: false,
+    selectedFiles: [], // <-- new
   });
 
   const totalSteps = 5;
@@ -121,6 +123,16 @@ const Register = () => {
     toast.success("Account created! Complete your profile to continue.");
   };
 
+  /** Upload document files to Supabase storage */
+  const uploadDocuments = async (files: File[], profileId: string) => {
+    for (const file of files) {
+      const { error } = await supabase.storage
+        .from("documents")
+        .upload(`${profileId}/${file.name}`, file, { upsert: true });
+      if (error) throw error;
+    }
+  };
+
   const updateProfile = async (uid?: string) => {
     const targetUserId = uid ?? userId;
     if (!targetUserId) return;
@@ -134,10 +146,13 @@ const Register = () => {
 
       if (fetchError) throw fetchError;
 
-      // Convert profession label to enum for DB storage
-      const professionEnum = formData.profession
-        ? labelToEnum(formData.profession, formData.accountType)
-        : null;
+      const professionEnum = formData.profession ? labelToEnum(formData.profession, formData.accountType) : null;
+
+      // Upload documents if user selected any
+      if (formData.selectedFiles.length > 0) {
+        await uploadDocuments(formData.selectedFiles, profileRow.id);
+        formData.documentsUploaded = true;
+      }
 
       const { error: profileError } = await supabase
         .from("profiles")
@@ -167,42 +182,47 @@ const Register = () => {
         );
         if (privateError) throw privateError;
       }
-    } catch (err) {
-      if (import.meta.env.DEV) {
-        console.error("Error updating profile:", err);
-      }
+    } catch (err: any) {
+      console.error("Error updating profile:", err);
+      toast.error("Failed to update profile: " + err.message);
     }
   };
 
   const handleNext = async () => {
-    if (currentStep < totalSteps) {
-      if (userId) await updateProfile();
-      setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
-    } else {
-      setIsSubmitting(true);
+    setIsSubmitting(true);
+    if (currentStep === 4 && userId) {
+      // Step 4 = documents upload
       await updateProfile();
-      setIsSubmitting(false);
+    } else if (currentStep < totalSteps) {
+      if (userId) await updateProfile();
+    } else {
+      if (userId) await updateProfile();
       toast.success("Profile completed! Please check your email to verify your account before signing in.");
       navigate("/sign-in");
     }
+    setIsSubmitting(false);
+    setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
   };
 
   const handleBack = () => {
-    if (currentStep > 1) {
-      setCurrentStep((prev) => prev - 1);
-    } else {
-      navigate("/account-type");
-    }
+    if (currentStep > 1) setCurrentStep((prev) => prev - 1);
+    else navigate("/account-type");
   };
 
   const getStepTitle = () => {
     switch (currentStep) {
-      case 1: return "Create Account";
-      case 2: return "Personal Info";
-      case 3: return "Contact & Pricing";
-      case 4: return "Upload Documents";
-      case 5: return "Your Skills";
-      default: return "";
+      case 1:
+        return "Create Account";
+      case 2:
+        return "Personal Info";
+      case 3:
+        return "Contact & Pricing";
+      case 4:
+        return "Upload Documents";
+      case 5:
+        return "Your Skills";
+      default:
+        return "";
     }
   };
 
@@ -210,18 +230,46 @@ const Register = () => {
     switch (currentStep) {
       case 1:
         return (
-          <StepCredentials data={formData} onUpdate={updateFormData} onNext={handleCredentialsNext} onBack={handleBack} isSubmitting={isSubmitting} />
+          <StepCredentials
+            data={formData}
+            onUpdate={updateFormData}
+            onNext={handleCredentialsNext}
+            onBack={handleBack}
+            isSubmitting={isSubmitting}
+          />
         );
       case 2:
         return (
-          <StepPersonalInfo data={formData} onUpdate={updateFormData} onNext={handlePersonalInfoNext} onBack={handleBack} isSubmitting={isSubmitting} />
+          <StepPersonalInfo
+            data={formData}
+            onUpdate={updateFormData}
+            onNext={handlePersonalInfoNext}
+            onBack={handleBack}
+            isSubmitting={isSubmitting}
+          />
         );
       case 3:
         return <StepContactPricing data={formData} onUpdate={updateFormData} onNext={handleNext} onBack={handleBack} />;
       case 4:
-        return <StepDocuments data={formData} onUpdate={updateFormData} onNext={handleNext} onBack={handleBack} userId={userId} />;
+        return (
+          <StepDocuments
+            data={formData}
+            onUpdate={updateFormData}
+            onNext={handleNext}
+            onBack={handleBack}
+            userId={userId}
+          />
+        );
       case 5:
-        return <StepSkills data={formData} onUpdate={updateFormData} onNext={handleNext} onBack={handleBack} isSubmitting={isSubmitting} />;
+        return (
+          <StepSkills
+            data={formData}
+            onUpdate={updateFormData}
+            onNext={handleNext}
+            onBack={handleBack}
+            isSubmitting={isSubmitting}
+          />
+        );
       default:
         return null;
     }
@@ -230,7 +278,6 @@ const Register = () => {
   return (
     <div className="min-h-screen gradient-primary flex items-center justify-center p-4">
       <div className="w-full max-w-md bg-card rounded-3xl shadow-xl overflow-hidden animate-scale-in">
-        {/* Progress Header */}
         <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3 mb-4">
             <img src={logoBusiness} alt="Safesight" className="w-8 h-8 rounded-lg object-cover" />
@@ -244,8 +291,6 @@ const Register = () => {
           </div>
           <Progress value={progress} className="h-2" />
         </div>
-
-        {/* Step Content */}
         <div className="p-6">{renderStep()}</div>
       </div>
     </div>
